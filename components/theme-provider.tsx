@@ -2,6 +2,9 @@
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+import { IconContext } from "react-icons"
+import { MotionConfig } from "motion/react"
+import { transitionTheme } from "@/lib/theme-transition"
 
 function ThemeProvider({
   children,
@@ -15,10 +18,33 @@ function ThemeProvider({
       disableTransitionOnChange
       {...props}
     >
-      <ThemeHotkey />
-      {children}
+      <MotionConfig reducedMotion="user">
+        <IconContext.Provider value={{ size: "24px" }}>
+          <MotionReadiness />
+          <ThemeHotkey />
+          <ThemeColorSync />
+          {children}
+        </IconContext.Provider>
+      </MotionConfig>
     </NextThemesProvider>
   )
+}
+
+function MotionReadiness() {
+  React.useLayoutEffect(() => {
+    if (typeof window.IntersectionObserver !== "function") {
+      return
+    }
+
+    const root = document.documentElement
+    root.setAttribute("data-ehfi-motion-ready", "true")
+
+    return () => {
+      root.removeAttribute("data-ehfi-motion-ready")
+    }
+  }, [])
+
+  return null
 }
 
 function isTypingTarget(target: EventTarget | null) {
@@ -47,15 +73,16 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
       if (isTypingTarget(event.target)) {
         return
       }
 
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
+      if (typeof event.key !== "string" || event.key.toLowerCase() !== "d") {
+        return
+      }
+
+      const nextTheme = resolvedTheme === "dark" ? "light" : "dark"
+      transitionTheme(nextTheme, () => setTheme(nextTheme))
     }
 
     window.addEventListener("keydown", onKeyDown)
@@ -64,6 +91,29 @@ function ThemeHotkey() {
       window.removeEventListener("keydown", onKeyDown)
     }
   }, [resolvedTheme, setTheme])
+
+  return null
+}
+
+function ThemeColorSync() {
+  const { resolvedTheme } = useTheme()
+
+  React.useEffect(() => {
+    const background = window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue("--background")
+      .trim()
+
+    if (!background) {
+      return
+    }
+
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((meta) => {
+        meta.content = background
+      })
+  }, [resolvedTheme])
 
   return null
 }

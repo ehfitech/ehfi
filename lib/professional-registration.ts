@@ -1,9 +1,13 @@
+import { validatePassword } from "@/lib/auth/password"
+
 export type PersonalForm = {
   fullName: string
   birthDate: string
   cpf: string
   email: string
   phone: string
+  password: string
+  passwordConfirmation: string
   city: string
   state: string
   instagram: string
@@ -20,7 +24,12 @@ export type AcademicStatus = "completed" | "in_progress"
 export type DiplomaAvailability = "available" | "pending"
 export type AlternativeDocument = "transcript" | "completion_declaration"
 export type ProofKind = "diploma" | "transcript" | "completion_declaration"
-export type SelectedFile = { kind: ProofKind; name: string }
+export type SelectedFile = {
+  kind: ProofKind
+  name: string
+  path?: string
+  size?: number
+}
 
 export type AcademicForm = {
   institution: string
@@ -93,6 +102,8 @@ export const initialPersonal: PersonalForm = {
   cpf: "",
   email: "",
   phone: "",
+  password: "",
+  passwordConfirmation: "",
   city: "",
   state: "",
   instagram: "",
@@ -290,6 +301,10 @@ export function validatePersonal(form: PersonalForm): PersonalErrors {
   if (!isValidCpf(form.cpf)) errors.cpf = "Informe um CPF válido."
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "Confira o formato do e-mail."
   if (![10, 11].includes(form.phone.replace(/\D/g, "").length)) errors.phone = "Informe um telefone com DDD."
+  if (!validatePassword(form.password).valid) errors.password = "Atenda aos requisitos de segurança da senha."
+  if (!form.passwordConfirmation || form.passwordConfirmation !== form.password) {
+    errors.passwordConfirmation = "As senhas precisam ser iguais."
+  }
   if (form.city.trim().length < 2) errors.city = "Informe sua cidade."
   if (!/^[A-Za-z]{2}$/.test(form.state.trim())) errors.state = "Use a sigla de dois caracteres."
   return errors

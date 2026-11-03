@@ -34,9 +34,9 @@ export function RoleCard() {
         className="rounded-xl"
       >
         <Link
-          href="/aluno/cadastro"
+          href="/aluno/entrar"
           transitionTypes={["nav-forward"]}
-          aria-label="Sou aluno. Começar cadastro"
+          aria-label="Sou aluno. Entrar ou criar conta"
           className="group block h-full rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Card className="h-full min-h-52 gap-0 rounded-2xl border-primary/25 bg-card/85 p-0 shadow-md ring-primary/10 transition-[border-color,box-shadow] duration-200 group-hover:border-primary/45 group-hover:shadow-lg">
@@ -62,7 +62,7 @@ export function RoleCard() {
                 seus objetivos.
               </CardDescription>
               <span className="mt-1 inline-flex items-center gap-2 text-sm font-semibold text-primary">
-                Começar cadastro
+                Entrar ou criar conta
                 <IoArrowForwardOutline aria-hidden="true" className="size-4" />
               </span>
             </CardContent>
@@ -77,9 +77,9 @@ export function RoleCard() {
         className="rounded-xl"
       >
         <Link
-          href="/profissional/cadastro"
+          href="/profissional/entrar"
           transitionTypes={["nav-forward"]}
-          aria-label="Sou profissional. Começar cadastro"
+          aria-label="Sou profissional. Entrar ou criar conta"
           className="group block h-full rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Card className="h-full min-h-52 gap-0 rounded-2xl border-primary/25 bg-card/85 p-0 shadow-md ring-primary/10 transition-[border-color,box-shadow] duration-200 group-hover:border-primary/45 group-hover:shadow-lg">
@@ -104,7 +104,7 @@ export function RoleCard() {
                 Saúde, esporte e educação física.
               </CardDescription>
               <span className="mt-1 inline-flex items-center gap-2 text-sm font-semibold text-primary">
-                Começar cadastro
+                Entrar ou criar conta
                 <IoArrowForwardOutline aria-hidden="true" className="size-4" />
               </span>
             </CardContent>
@@ -119,9 +119,9 @@ export function RoleCard() {
         className="rounded-xl"
       >
         <Link
-          href="/empresa/cadastro"
+          href="/empresa/entrar"
           transitionTypes={["nav-forward"]}
-          aria-label="Sou empresa. Começar cadastro"
+          aria-label="Sou empresa. Entrar ou criar conta"
           className="group block h-full rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Card className="h-full min-h-52 gap-0 rounded-2xl border-primary/25 bg-card/85 p-0 shadow-md ring-primary/10 transition-[border-color,box-shadow] duration-200 group-hover:border-primary/45 group-hover:shadow-lg">
@@ -146,7 +146,7 @@ export function RoleCard() {
                 Planeje sessões de ginástica laboral para sua equipe.
               </CardDescription>
               <span className="mt-1 inline-flex items-center gap-2 text-sm font-semibold text-primary">
-                Começar cadastro
+                Entrar ou criar conta
                 <IoArrowForwardOutline aria-hidden="true" className="size-4" />
               </span>
             </CardContent>

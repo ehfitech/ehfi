@@ -97,9 +97,6 @@ export type StudentRegistrationForm = {
   experienceNotes: string
   accuracyConfirmed: boolean
   healthDataConsent: boolean
-  guardianName: string
-  guardianContact: string
-  guardianConfirmed: boolean
 }
 
 export type StudentRegistrationField = keyof StudentRegistrationForm
@@ -160,9 +157,6 @@ export const initialStudentRegistration: StudentRegistrationForm = {
   experienceNotes: "",
   accuracyConfirmed: false,
   healthDataConsent: false,
-  guardianName: "",
-  guardianContact: "",
-  guardianConfirmed: false,
 }
 
 export const studentSignupSteps = [
@@ -521,27 +515,6 @@ function validateGoalsAndConfirmation(
   if (!form.healthDataConsent)
     errors.healthDataConsent =
       "A autorização é necessária para concluir este cadastro."
-
-  const age = getStudentAge(form.birthDate)
-  if (age !== null && age < 18) {
-    if (!form.guardianName.trim())
-      errors.guardianName = "Informe o nome do responsável legal."
-    const contact = form.guardianContact.trim()
-    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)
-    const phoneLength = contact.replace(/\D/g, "").length
-    if (!emailIsValid && ![10, 11].includes(phoneLength)) {
-      errors.guardianContact =
-        "Informe um e-mail ou telefone com DDD do responsável."
-    }
-    if (!form.guardianConfirmed)
-      errors.guardianConfirmed =
-        "O responsável precisa confirmar a autorização."
-  }
-
-  if (requiresProfessionalReview(form)) {
-    errors.professionalReview =
-      "O cadastro não pode ser concluído enquanto houver necessidade de revisão profissional."
-  }
 
   return errors
 }

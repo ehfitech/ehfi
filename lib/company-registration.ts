@@ -1,3 +1,5 @@
+import { validatePassword } from "@/lib/auth/password"
+
 export type CompanySignupStep = 1 | 2 | 3 | 4 | 5 | 6
 
 export type CompanyActivity =
@@ -118,6 +120,8 @@ export type CompanyRegistrationForm = {
   contactRole: string
   contactDepartment: string
   contactEmail: string
+  password: string
+  passwordConfirmation: string
   contactPhone: string
   contactTime: "morning" | "afternoon" | "night" | "any" | ""
   employeeBand: EmployeeBand | ""
@@ -174,6 +178,8 @@ export const initialCompanyRegistration: CompanyRegistrationForm = {
   contactRole: "",
   contactDepartment: "",
   contactEmail: "",
+  password: "",
+  passwordConfirmation: "",
   contactPhone: "",
   contactTime: "",
   employeeBand: "",
@@ -494,6 +500,12 @@ function validateContact(form: CompanyRegistrationForm) {
   if (!emailPattern.test(form.contactEmail.trim())) {
     addError(errors, "contactEmail", "Confira o formato do e-mail.")
   }
+  if (!validatePassword(form.password).valid) {
+    addError(errors, "password", "Atenda aos requisitos de segurança da senha.")
+  }
+  if (!form.passwordConfirmation || form.passwordConfirmation !== form.password) {
+    addError(errors, "passwordConfirmation", "As senhas precisam ser iguais.")
+  }
   const phoneDigits = form.contactPhone.replace(/\D/g, "")
   if (
     ![10, 11].includes(phoneDigits.length) ||
@@ -613,7 +625,7 @@ function validateContractAndGoals(form: CompanyRegistrationForm) {
 
 function validateConfirmations(form: CompanyRegistrationForm) {
   const errors: CompanyRegistrationErrors = {}
-  if (!form.termsAccepted) addError(errors, "termsAccepted", "Aceite os Termos de Uso da demonstração.")
+  if (!form.termsAccepted) addError(errors, "termsAccepted", "Aceite os Termos de Uso.")
   if (!form.privacyAcknowledged) addError(errors, "privacyAcknowledged", "Confirme a ciência da Política de Privacidade.")
   if (!form.contactAuthorized) addError(errors, "contactAuthorized", "Autorize o contato do EHFI sobre esta solicitação.")
   if (!form.accuracyConfirmed) addError(errors, "accuracyConfirmed", "Confirme as informações fornecidas.")

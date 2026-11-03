@@ -1,10 +1,5 @@
-import { SignupSuccess } from "@/components/ehfi/signup-success"
-import { PageTransition } from "@/components/ehfi/page-transition"
+import { redirect } from "next/navigation"
 
-export default function SignupSuccessPage() {
-  return (
-    <PageTransition>
-      <SignupSuccess />
-    </PageTransition>
-  )
+export default function ProfessionalSignupSuccessPage() {
+  redirect("/profissional/plataforma")
 }

@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState, type ChangeEvent } from "react"
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import {
   IoArrowBackOutline,
@@ -14,8 +14,9 @@ import {
   IoCallOutline,
   IoCardOutline,
   IoCheckmarkOutline,
-  IoCloudUploadOutline,
   IoDocumentTextOutline,
+  IoEyeOffOutline,
+  IoEyeOutline,
   IoFitnessOutline,
   IoLocationOutline,
   IoLogoInstagram,
@@ -31,11 +32,13 @@ import {
 } from "react-icons/io5"
 
 import { ThemeToggle } from "@/components/ehfi/theme-toggle"
+import { PrivatePdfUpload } from "@/components/ehfi/private-pdf-upload"
+import { finalizeProfessionalRegistration } from "@/app/actions/registrations"
 import { ProfessionalSignupStepper, type ProfessionalSignupStep } from "@/components/ehfi/professional-signup-stepper"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { StudentPasswordStrength as PasswordStrengthIndicator } from "@/components/ehfi/student-signup-fields"
 import {
   Combobox,
   ComboboxContent,
@@ -47,10 +50,13 @@ import {
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useRegistrationDraft } from "@/hooks/use-registration-draft"
+import type { DraftFileReference } from "@/lib/registration-drafts/types"
 import {
   ehfiEase,
   ehfiMotion,
@@ -71,7 +77,6 @@ import {
   PersonalField,
   PersonalForm,
   ProfessionalLaborForm,
-  ProofKind,
   SelectedFile,
   SignupTerms,
   formatBirthDate,
@@ -87,7 +92,6 @@ import {
   initialProfessionalLabor,
   initialSignupTerms,
   proofLabels,
-  sampleFiles,
   validateAcademic,
   validateCref,
   validateProfessionalLabor,
@@ -134,9 +138,10 @@ function FormField({ id, label, error, hint, revealOrder = 0, children }: FieldP
 
 type IconInputProps = React.ComponentProps<typeof InputGroupInput> & {
   icon: React.ReactNode
+  trailing?: React.ReactNode
 }
 
-function IconInput({ icon, ...props }: IconInputProps) {
+function IconInput({ icon, trailing, ...props }: IconInputProps) {
   return (
     <InputGroup className="h-11 rounded-xl bg-background/60 transition-colors focus-within:bg-background/80">
       <InputGroupInput {...props} className="h-11 text-sm" />
@@ -146,7 +151,41 @@ function IconInput({ icon, ...props }: IconInputProps) {
       >
         {icon}
       </InputGroupAddon>
+      {trailing ? (
+        <InputGroupAddon align="inline-end" className="py-0 pr-0.5">
+          {trailing}
+        </InputGroupAddon>
+      ) : null}
     </InputGroup>
+  )
+}
+
+function PasswordVisibilityButton({
+  visible,
+  label,
+  onToggle,
+}: {
+  visible: boolean
+  label: string
+  onToggle: () => void
+}) {
+  const action = visible ? "Ocultar" : "Mostrar"
+
+  return (
+    <InputGroupButton
+      size="icon-sm"
+      className="size-11 rounded-xl p-0 text-muted-foreground hover:text-foreground"
+      aria-label={`${action} ${label}`}
+      aria-pressed={visible}
+      title={`${action} ${label}`}
+      onClick={onToggle}
+    >
+      {visible ? (
+        <IoEyeOffOutline aria-hidden="true" className="size-5" />
+      ) : (
+        <IoEyeOutline aria-hidden="true" className="size-5" />
+      )}
+    </InputGroupButton>
   )
 }
 
@@ -258,64 +297,6 @@ function SelectableCard({
   )
 }
 
-function DemoFilePicker({
-  id,
-  label,
-  hint,
-  fileName,
-  error,
-  onSelect,
-  onRemove,
-}: {
-  id: string
-  label: string
-  hint: string
-  fileName: string | null
-  error?: string
-  onSelect: () => void
-  onRemove: () => void
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="text-sm font-medium text-foreground/90">{label}</Label>
-      <p className="text-xs leading-5 text-muted-foreground">{hint}</p>
-      {fileName ? (
-        <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/[0.045] p-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <IoDocumentTextOutline aria-hidden="true" className="size-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">{fileName}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">PDF de exemplo selecionado</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button id={id} type="button" variant="outline" size="sm" onClick={onSelect}>Substituir</Button>
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Remover ${label.toLocaleLowerCase("pt-BR")}`} onClick={onRemove}>
-              <IoTrashOutline aria-hidden="true" className="size-4" />
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Button
-          id={id}
-          type="button"
-          variant="outline"
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-error` : undefined}
-          className="h-11 w-full justify-center rounded-xl border-dashed"
-          onClick={onSelect}
-        >
-          <IoCloudUploadOutline aria-hidden="true" className="size-4" />
-          Selecionar PDF de demonstração
-        </Button>
-      )}
-      {error ? <p id={`${id}-error`} role="alert" className="text-xs leading-5 text-destructive">{error}</p> : null}
-    </div>
-  )
-}
-
 const formationIconMap = {
   school: IoSchoolOutline,
   person: IoPersonOutline,
@@ -397,21 +378,75 @@ export function ProfessionalSignup() {
   const [continuedSteps, setContinuedSteps] = useState<ReadonlySet<ProfessionalSignupStep>>(() => new Set())
   const pendingInvalidFocusStep = useRef<ProfessionalSignupStep | null>(null)
   const [personal, setPersonal] = useState<PersonalForm>(initialPersonal)
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [passwordConfirmationVisible, setPasswordConfirmationVisible] = useState(false)
   const [academic, setAcademic] = useState<AcademicForm>(initialAcademic)
   const [cref, setCref] = useState<CrefForm>(initialCref)
   const [labor, setLabor] = useState<ProfessionalLaborForm>(initialProfessionalLabor)
   const [serviceAreaDraft, setServiceAreaDraft] = useState("")
   const [signupTerms, setSignupTerms] = useState<SignupTerms>(initialSignupTerms)
+  const [uploadedFiles, setUploadedFiles] = useState<DraftFileReference[]>([])
   const laborSelectionScrollPosition = useRef<{ left: number; top: number } | null>(null)
   const signupTermsScrollPosition = useRef<{ left: number; top: number } | null>(null)
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null)
-  const [documentDialogTarget, setDocumentDialogTarget] = useState<"academic" | "cref-card" | "cref-request" | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submissionError, setSubmissionError] = useState<string | null>(null)
+  const didRestoreDraft = useRef(false)
   const [attemptedPersonal, setAttemptedPersonal] = useState(false)
   const [attemptedAcademic, setAttemptedAcademic] = useState(false)
   const [attemptedCref, setAttemptedCref] = useState(false)
   const [attemptedLabor, setAttemptedLabor] = useState(false)
   const [attemptedTerms, setAttemptedTerms] = useState(false)
   const [keyboardInset, setKeyboardInset] = useState(0)
+  const draftPayload = useMemo(
+    () => ({ personal, academic, cref, labor, terms: signupTerms, selectedFile }),
+    [academic, cref, labor, personal, selectedFile, signupTerms]
+  )
+  const draft = useRegistrationDraft("professional", draftPayload, true)
+
+  useEffect(() => {
+    if (draft.status === "loading" || didRestoreDraft.current) return
+    didRestoreDraft.current = true
+    if (draft.restoredPayload) {
+      const restored = draft.restoredPayload as Partial<typeof draftPayload>
+      const restoredPersonal = {
+        ...initialPersonal,
+        ...restored.personal,
+        password: "",
+        passwordConfirmation: "",
+      }
+      const restoredAcademic = { ...initialAcademic, ...restored.academic }
+      const restoredCref = { ...initialCref, ...restored.cref }
+      setPersonal(restoredPersonal)
+      setAcademic(restoredAcademic)
+      setCref(restoredCref)
+      setLabor({ ...initialProfessionalLabor, ...restored.labor })
+      setSignupTerms({ ...initialSignupTerms, ...restored.terms })
+    }
+    const files = draft.draftFiles
+    setUploadedFiles(files)
+    const required = draft.restoredPayload && typeof draft.restoredPayload === "object"
+      ? getRequiredProof(
+          { ...initialAcademic, ...(draft.restoredPayload as Partial<typeof draftPayload>).academic }
+        )
+      : getRequiredProof(academic)
+    const academicFile = required ? files.find((file) => file.kind === required) : undefined
+    setSelectedFile(
+      academicFile
+        ? {
+            kind: academicFile.kind as SelectedFile["kind"],
+            name: academicFile.originalName,
+            path: academicFile.path,
+            size: academicFile.size,
+          }
+        : null
+    )
+  }, [
+    academic,
+    draft.draftFiles,
+    draft.restoredPayload,
+    draft.status,
+  ])
 
   useEffect(() => {
     const viewport = window.visualViewport
@@ -462,7 +497,6 @@ export function ProfessionalSignup() {
   if (labor.interest !== null && Object.keys(laborErrors).length === 0) completedSteps.add(4)
   if (Object.keys(signupTermsErrors).length === 0) completedSteps.add(5)
   const requiredProof = getRequiredProof(academic)
-  const documentDialogOpen = documentDialogTarget !== null
   const crefPreventsPractice = cref.answer === "awaiting"
     || cref.answer === "none"
     || (cref.answer === "registered" && cref.declaredSituation === "pending_issues")
@@ -501,6 +535,40 @@ export function ProfessionalSignup() {
 
   function updateCref<K extends keyof CrefForm>(key: K, value: CrefForm[K]) {
     setCref((current) => ({ ...current, [key]: value }))
+  }
+
+  function updateDraftFile(kind: DraftFileReference["kind"], value: DraftFileReference | null) {
+    setUploadedFiles((current) =>
+      value
+        ? [...current.filter((file) => file.kind !== kind), value]
+        : current.filter((file) => file.kind !== kind)
+    )
+    if (kind === "diploma" || kind === "transcript" || kind === "completion_declaration") {
+      setSelectedFile(
+        value
+          ? { kind, name: value.originalName, path: value.path, size: value.size }
+          : null
+      )
+    } else if (kind === "cref-card") {
+      updateCref("professionalCardFile", value?.path ?? null)
+    } else {
+      updateCref("requestProofFile", value?.path ?? null)
+    }
+  }
+
+  function removeDraftReference(path: string | undefined) {
+    if (!path) return
+    void fetch("/api/registration-draft/files", {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ path }),
+    }).then((response) => {
+      if (!response.ok) {
+        setSubmissionError("Não foi possível remover o documento anterior do rascunho.")
+      }
+    }).catch(() => {
+      setSubmissionError("Não foi possível remover o documento anterior do rascunho.")
+    })
   }
 
   function updateLabor<K extends keyof ProfessionalLaborForm>(key: K, value: ProfessionalLaborForm[K]) {
@@ -659,7 +727,8 @@ export function ProfessionalSignup() {
     navigateToStep(4)
   }
 
-  function finishSignup() {
+  async function finishSignup() {
+    setSubmissionError(null)
     pendingInvalidFocusStep.current = null
     const validation = [
       { step: 1 as const, errors: personalErrors },
@@ -687,10 +756,31 @@ export function ProfessionalSignup() {
       return
     }
 
-    router.push("/profissional/sucesso", { transitionTypes: ["nav-forward"] })
+    setSubmitting(true)
+    try {
+      const result = await finalizeProfessionalRegistration({
+        personal,
+        academic,
+        cref,
+        labor,
+        terms: signupTerms,
+      })
+      if (!result.ok) {
+        setSubmissionError(result.message)
+        return
+      }
+      router.push(result.redirectTo, { transitionTypes: ["nav-forward"] })
+    } catch {
+      setSubmissionError(
+        "Não foi possível concluir agora. O rascunho e os documentos foram mantidos para tentar novamente."
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   function changeStatus(status: AcademicStatus) {
+    removeDraftReference(selectedFile?.path)
     setAcademic((current) => ({
       ...current,
       status,
@@ -699,29 +789,27 @@ export function ProfessionalSignup() {
       alternativeDocument: null,
     }))
     setSelectedFile(null)
+    setUploadedFiles((current) => current.filter(
+      (file) => !["diploma", "transcript", "completion_declaration"].includes(file.kind)
+    ))
   }
 
   function changeDiplomaAvailability(value: DiplomaAvailability) {
+    removeDraftReference(selectedFile?.path)
     setAcademic((current) => ({ ...current, diplomaAvailability: value, alternativeDocument: null }))
     setSelectedFile(null)
+    setUploadedFiles((current) => current.filter(
+      (file) => !["diploma", "transcript", "completion_declaration"].includes(file.kind)
+    ))
   }
 
   function changeAlternativeDocument(value: AlternativeDocument) {
+    removeDraftReference(selectedFile?.path)
     setAcademic((current) => ({ ...current, alternativeDocument: value }))
     setSelectedFile(null)
-  }
-
-  function chooseProof(kind: ProofKind) {
-    setSelectedFile({ kind, name: sampleFiles[kind] })
-    setDocumentDialogTarget(null)
-  }
-
-  function chooseCrefDocument(target: "cref-card" | "cref-request") {
-    updateCref(
-      target === "cref-card" ? "professionalCardFile" : "requestProofFile",
-      target === "cref-card" ? "carteira_profissional_cref_demo.pdf" : "protocolo_cref_demo.pdf"
-    )
-    setDocumentDialogTarget(null)
+    setUploadedFiles((current) => current.filter(
+      (file) => !["diploma", "transcript", "completion_declaration"].includes(file.kind)
+    ))
   }
 
   function fieldProps(id: string, error?: string) {
@@ -751,12 +839,12 @@ export function ProfessionalSignup() {
           className="lg:sticky lg:top-8"
         >
           <Link
-            href="/"
+            href="/profissional/entrar"
             transitionTypes={["nav-back"]}
             className="mb-5 inline-flex h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card/55 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
           >
             <IoArrowBackOutline aria-hidden="true" className="size-4" />
-            Voltar ao início
+            Voltar ao login
           </Link>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ehfi-secondary">Cadastro profissional</p>
           <h1 className="mt-2 max-w-[16ch] font-heading text-3xl leading-[1.08] font-semibold tracking-[-0.035em] text-foreground sm:text-4xl">
@@ -854,6 +942,54 @@ export function ProfessionalSignup() {
                           </div>
                           <FormField id="phone" label="Telefone / WhatsApp" error={fieldError("phone")} revealOrder={2}>
                             <IconInput icon={<IoCallOutline aria-hidden="true" />} id="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" maxLength={16} value={personal.phone} onChange={(event) => updateMaskedPersonal("phone", event, formatPhone)} onBlur={(event) => updatePersonal("phone", formatPhone(event.currentTarget.value))} {...fieldProps("phone", fieldError("phone"))} />
+                          </FormField>
+                        </div>
+                      </Panel>
+
+                      <Panel>
+                        <SectionTitle icon={<IoShieldCheckmarkOutline aria-hidden="true" className="size-5" />} title="Acesso à conta" subtitle="Use o e-mail informado acima para entrar na EHFI." />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <FormField id="password" label="Senha" error={fieldError("password")} hint="8+ caracteres, com maiúscula, minúscula, número e símbolo." revealOrder={3}>
+                            <IconInput
+                              icon={<IoShieldCheckmarkOutline aria-hidden="true" />}
+                              id="password"
+                              type={passwordVisible ? "text" : "password"}
+                              autoComplete="new-password"
+                              value={personal.password}
+                              onChange={(event) => updatePersonal("password", event.target.value)}
+                              trailing={
+                                <PasswordVisibilityButton
+                                  visible={passwordVisible}
+                                  label="senha"
+                                  onToggle={() => setPasswordVisible((visible) => !visible)}
+                                />
+                              }
+                              {...fieldProps("password", fieldError("password"))}
+                              aria-describedby={[
+                                fieldError("password") ? "password-error" : null,
+                                "password-strength-status",
+                                "password-strength-checklist",
+                              ].filter(Boolean).join(" ")}
+                            />
+                            <PasswordStrengthIndicator password={personal.password} />
+                          </FormField>
+                          <FormField id="passwordConfirmation" label="Confirmar senha" error={fieldError("passwordConfirmation")} revealOrder={4}>
+                            <IconInput
+                              icon={<IoShieldCheckmarkOutline aria-hidden="true" />}
+                              id="passwordConfirmation"
+                              type={passwordConfirmationVisible ? "text" : "password"}
+                              autoComplete="new-password"
+                              value={personal.passwordConfirmation}
+                              onChange={(event) => updatePersonal("passwordConfirmation", event.target.value)}
+                              trailing={
+                                <PasswordVisibilityButton
+                                  visible={passwordConfirmationVisible}
+                                  label="confirmação de senha"
+                                  onToggle={() => setPasswordConfirmationVisible((visible) => !visible)}
+                                />
+                              }
+                              {...fieldProps("passwordConfirmation", fieldError("passwordConfirmation"))}
+                            />
                           </FormField>
                         </div>
                       </Panel>
@@ -998,32 +1134,15 @@ export function ProfessionalSignup() {
 
                       {requiredProof ? (
                         <Panel key={`proof-${requiredProof}`}>
-                          <SectionTitle icon={<IoDocumentTextOutline aria-hidden="true" className="size-5" />} title="Comprovante" subtitle="A seleção é demonstrativa e não abre seus arquivos." />
-                          <div className="rounded-2xl border border-border/70 bg-background/50 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Documento solicitado</p>
-                            <p className="mt-1 font-medium text-foreground">{proofLabels[requiredProof]}</p>
-                            {selectedFile?.kind === requiredProof ? (
-                              <div className="mt-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/[0.045] p-3 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex min-w-0 items-center gap-3">
-                                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><IoDocumentTextOutline aria-hidden="true" className="size-5" /></span>
-                                  <div className="min-w-0">
-                                    <p className="truncate text-sm font-medium text-foreground">{selectedFile.name}</p>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">PDF de exemplo selecionado</p>
-                                  </div>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button type="button" variant="outline" size="sm" onClick={() => setDocumentDialogTarget("academic")}>Substituir</Button>
-                                  <Button type="button" variant="ghost" size="icon-sm" aria-label="Remover comprovante" onClick={() => setSelectedFile(null)}><IoTrashOutline aria-hidden="true" className="size-4" /></Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <Button id="academicProof" type="button" variant="outline" aria-invalid={academicError("proof") ? true : undefined} aria-describedby={academicError("proof") ? "academic-proof-error" : undefined} className="mt-4 h-11 w-full justify-center rounded-xl border-dashed" onClick={() => setDocumentDialogTarget("academic")}>
-                                <IoCloudUploadOutline aria-hidden="true" className="size-4" />
-                                Selecionar PDF de demonstração
-                              </Button>
-                            )}
-                            {academicError("proof") ? <p id="academic-proof-error" role="alert" className="mt-2 text-xs text-destructive">{academicError("proof")}</p> : null}
-                          </div>
+                          <SectionTitle icon={<IoDocumentTextOutline aria-hidden="true" className="size-5" />} title="Comprovante" subtitle="Envie o documento solicitado em PDF. O arquivo fica privado." />
+                          <PrivatePdfUpload
+                            kind={requiredProof}
+                            label={proofLabels[requiredProof]}
+                            hint="PDF de até 10 MB. O EHFI ainda precisará analisar as informações declaradas."
+                            value={uploadedFiles.find((file) => file.kind === requiredProof) ?? null}
+                            error={academicError("proof")}
+                            onChange={(file) => updateDraftFile(requiredProof, file)}
+                          />
                         </Panel>
                       ) : null}
                     </>
@@ -1104,14 +1223,13 @@ export function ProfessionalSignup() {
                               <p className="mt-2 text-xs leading-5 text-muted-foreground">Esta informação é autodeclarada e não confirma a validação do CREF.</p>
                             </fieldset>
 
-                            <DemoFilePicker
-                              id="crefProfessionalCard"
+                            <PrivatePdfUpload
+                              kind="cref-card"
                               label="Carteira profissional do CREF (obrigatória)"
-                              hint="Anexe a carteira para continuar. Nesta demonstração, selecione um PDF de exemplo."
-                              fileName={cref.professionalCardFile}
+                              hint="PDF de até 10 MB. O envio não confirma a regularidade do registro."
+                              value={uploadedFiles.find((file) => file.kind === "cref-card") ?? null}
                               error={crefError("professionalCardFile")}
-                              onSelect={() => setDocumentDialogTarget("cref-card")}
-                              onRemove={() => updateCref("professionalCardFile", null)}
+                              onChange={(file) => updateDraftFile("cref-card", file)}
                             />
                           </motion.div>
                         ) : null}
@@ -1121,13 +1239,12 @@ export function ProfessionalSignup() {
                             <FormField id="crefRequestSituation" label="Situação da solicitação" error={crefError("requestSituation")} hint="Conte quando solicitou o registro e em que etapa o pedido está." revealOrder={1}>
                               <Textarea id="crefRequestSituation" rows={4} placeholder="Descreva o andamento da sua solicitação" value={cref.requestSituation} onChange={(event) => updateCref("requestSituation", event.target.value)} {...fieldProps("crefRequestSituation", crefError("requestSituation"))} className="min-h-28 rounded-xl bg-background/60 text-sm" />
                             </FormField>
-                            <DemoFilePicker
-                              id="crefRequestProof"
+                            <PrivatePdfUpload
+                              kind="cref-request"
                               label="Protocolo ou comprovante (opcional)"
-                              hint="Se tiver um protocolo ou comprovante, você pode selecionar um PDF de exemplo."
-                              fileName={cref.requestProofFile}
-                              onSelect={() => setDocumentDialogTarget("cref-request")}
-                              onRemove={() => updateCref("requestProofFile", null)}
+                              hint="Se tiver um protocolo ou comprovante, envie-o em PDF (até 10 MB)."
+                              value={uploadedFiles.find((file) => file.kind === "cref-request") ?? null}
+                              onChange={(file) => updateDraftFile("cref-request", file)}
                             />
                           </motion.div>
                         ) : null}
@@ -1452,65 +1569,23 @@ export function ProfessionalSignup() {
                   <IoArrowBackOutline aria-hidden="true" className="size-4" /> Voltar
                 </Button>
               ) : <span className="hidden sm:block" />}
-              <Button form="professional-signup-form" type="submit" className="h-12 w-full rounded-xl px-5 font-semibold shadow-[0_8px_24px_-10px_color-mix(in_oklch,var(--primary)_65%,transparent)] sm:w-auto">
-                {step === 5 ? "Concluir cadastro" : "Continuar"}
+              <Button form="professional-signup-form" type="submit" disabled={submitting || draft.status === "loading"} className="h-12 w-full rounded-xl px-5 font-semibold shadow-[0_8px_24px_-10px_color-mix(in_oklch,var(--primary)_65%,transparent)] sm:w-auto">
+                {step === 5 && submitting ? "Salvando cadastro…" : step === 5 ? "Concluir cadastro" : "Continuar"}
                 <IoArrowForwardOutline aria-hidden="true" className="size-4" />
               </Button>
             </div>
+            {submissionError ? <p role="alert" className="mx-auto mt-2 max-w-6xl text-center text-sm text-destructive">{submissionError}</p> : null}
+            <p className="mx-auto mt-2 max-w-6xl text-center text-xs text-muted-foreground">
+              {draft.status === "saving" ? "Salvando rascunho…" : draft.status === "saved" ? "Rascunho salvo neste dispositivo por até 30 dias sem atividade." : draft.status === "error" ? draft.error : "Já tem conta? "}
+              {draft.status !== "saving" && draft.status !== "saved" && draft.status !== "error" ? <Link href="/profissional/entrar" className="font-medium text-primary underline-offset-4 hover:underline">Entrar</Link> : null}
+            </p>
             <p className="mx-auto mt-2 max-w-6xl text-center text-[0.68rem] text-muted-foreground sm:hidden">
-              Seus dados não serão enviados nem salvos.
+              Seus dados são salvos como rascunho e enviados ao concluir o cadastro.
             </p>
           </div>
         </section>
       </div>
 
-      <Dialog open={documentDialogOpen} onOpenChange={(open) => { if (!open) setDocumentDialogTarget(null) }}>
-        <DialogContent className="rounded-3xl border-border/70 bg-card/95 backdrop-blur-xl sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-xl">
-              {documentDialogTarget === "cref-card" ? "Carteira profissional do CREF" : documentDialogTarget === "cref-request" ? "Protocolo ou comprovante" : "Escolha um PDF de exemplo"}
-            </DialogTitle>
-            <DialogDescription>
-              Nenhum arquivo do dispositivo será aberto ou enviado. Esta seleção serve apenas para demonstrar o fluxo e não valida o registro.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-2">
-            {documentDialogTarget === "academic" && requiredProof ? (
-              <button type="button" onClick={() => chooseProof(requiredProof)} className="flex min-h-16 items-center gap-3 rounded-2xl border border-primary/30 bg-primary/[0.06] px-4 py-3 text-left outline-none transition-colors hover:bg-primary/10 focus-visible:ring-3 focus-visible:ring-ring/40">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><IoDocumentTextOutline aria-hidden="true" className="size-5" /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-foreground">{proofLabels[requiredProof]}</span>
-                  <span className="mt-1 block truncate text-xs text-muted-foreground">{sampleFiles[requiredProof]}</span>
-                </span>
-                <IoArrowForwardOutline aria-hidden="true" className="size-4 text-primary" />
-              </button>
-            ) : null}
-            {documentDialogTarget === "cref-card" ? (
-              <button type="button" onClick={() => chooseCrefDocument("cref-card")} className="flex min-h-16 items-center gap-3 rounded-2xl border border-primary/30 bg-primary/[0.06] px-4 py-3 text-left outline-none transition-colors hover:bg-primary/10 focus-visible:ring-3 focus-visible:ring-ring/40">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><IoDocumentTextOutline aria-hidden="true" className="size-5" /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-foreground">Carteira profissional do CREF</span>
-                  <span className="mt-1 block truncate text-xs text-muted-foreground">carteira_profissional_cref_demo.pdf</span>
-                </span>
-                <IoArrowForwardOutline aria-hidden="true" className="size-4 text-primary" />
-              </button>
-            ) : null}
-            {documentDialogTarget === "cref-request" ? (
-              <button type="button" onClick={() => chooseCrefDocument("cref-request")} className="flex min-h-16 items-center gap-3 rounded-2xl border border-primary/30 bg-primary/[0.06] px-4 py-3 text-left outline-none transition-colors hover:bg-primary/10 focus-visible:ring-3 focus-visible:ring-ring/40">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><IoDocumentTextOutline aria-hidden="true" className="size-5" /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-foreground">Protocolo ou comprovante da solicitação</span>
-                  <span className="mt-1 block truncate text-xs text-muted-foreground">protocolo_cref_demo.pdf</span>
-                </span>
-                <IoArrowForwardOutline aria-hidden="true" className="size-4 text-primary" />
-              </button>
-            ) : null}
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" className="h-10 rounded-xl" onClick={() => setDocumentDialogTarget(null)}>Cancelar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </main>
   )
 }

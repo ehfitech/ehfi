@@ -5,7 +5,7 @@ import { PageTransition } from "@/components/ehfi/page-transition"
 
 export const metadata: Metadata = {
   title: "Cadastro de aluno — EHFI",
-  description: "Cadastro demonstrativo de aluno e anamnese inicial da EHFI.",
+  description: "Crie uma conta de aluno e preencha sua anamnese inicial EHFI.",
 }
 
 export default function StudentSignupPage() {

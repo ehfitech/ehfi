@@ -32,8 +32,9 @@ Transformar os três cadastros demonstrativos do EHFI em criação de contas uti
 - O cadastro final continua criando a conta somente após o envio completo. Rascunhos pré-conta serão mantidos no servidor com token opaco em cookie `httpOnly`, validade deslizante de 30 dias e sem credenciais.
 - A autorização de tratamento de dados de saúde será apresentada antes da primeira pergunta de saúde e registrada com versão e data antes de salvar essas respostas. Sem autorização, o cadastro de aluno não é criado e as respostas de saúde não são coletadas.
 - A anamnese fica acessível ao próprio aluno. O acesso profissional dependerá de uma associação explícita aluno-profissional e de uma política separada, que ainda não existe.
-- Menores de 18 anos podem criar conta e usar a plataforma na primeira versão. Nome/contato do responsável e confirmação continuam declaratórios; a interface não os apresenta como identidade ou autorização verificadas.
+- Menores de 18 anos podem criar conta e usar a plataforma na primeira versão, sem fluxo, coleta ou verificação de responsável. A autorização obrigatória de dados de saúde é registrada como aceita pela pessoa titular da conta.
 - Um sinal de revisão clínica ou CREF não impede a criação da conta; restringe a funcionalidade que depender de liberação/revisão.
+- Todos os perfis profissionais começam com `practice_status = review_pending`: uma autodeclaração e o upload de um PDF ainda não são validação manual do CREF. A revisão operacional ficou fora desta entrega.
 - Os campos de PDF de demonstração serão substituídos por upload real em armazenamento privado para persistir documentos profissionais. Nenhum arquivo ou URL pública ficará acessível sem autorização.
 - Se um email já tiver uma identidade Supabase, o cadastro orienta a pessoa a entrar antes de adicionar outro perfil à mesma conta; não será criada uma identidade duplicada.
 - As exigências atuais de documentos por situação acadêmica/CREF serão preservadas. O upload acontece durante o rascunho, usa acesso temporário de servidor e os objetos abandonados expiram junto com o rascunho.
@@ -67,7 +68,7 @@ Transformar os três cadastros demonstrativos do EHFI em criação de contas uti
 - `user_profiles`: dados comuns mínimos e estado de onboarding.
 - `user_roles`: associação entre identidade e perfis `student`, `professional` ou `company`.
 - `student_profiles`: perfil físico, rotina, objetivos e dados não sensíveis do aluno.
-- `student_health_records`: respostas de saúde e dados do responsável, com acesso restrito ao próprio aluno até existir associação autorizada.
+- `student_health_records`: respostas de saúde, com acesso restrito ao próprio aluno até existir associação autorizada.
 - `professional_profiles`: dados pessoais de perfil, formação, CREF, disponibilidade e preferências de atuação. Documentos guardam caminhos/metadados privados de Storage, nunca conteúdo público.
 - `companies` e `company_members`: empresa e pessoas autorizadas a agir em seu nome. O contato cadastrado inicia como membro responsável.
 - `company_intakes`: endereço, CNAE, estrutura, horários, modelo, orçamento, objetivos e confirmações da solicitação empresarial.
@@ -92,7 +93,7 @@ Transformar os três cadastros demonstrativos do EHFI em criação de contas uti
 - Excluir também os uploads temporários vinculados a rascunhos expirados ou concluídos, após mover os documentos aceitos para caminhos privados do usuário/empresa.
 - Definir retenção para contas incompletas e dados de saúde/profissionais/empresas antes da operação real; 30 dias é apenas o prazo aprovado para rascunhos.
 - A política atual precisa ser reescrita antes da operação com pessoas reais usando as informações operacionais acima; o sistema não inventará esses dados.
-- O fluxo atual de menores coleta declaração e contato do responsável sem verificar identidade ou autoridade. A primeira versão permite esses cadastros; a interface e os dados não podem sugerir que a representação legal foi verificada. Os requisitos aplicáveis ao tratamento de dados de crianças/adolescentes e ao serviço digital exigem avaliação específica.
+- A primeira versão permite cadastros de menores sem coletar ou verificar autorização de responsável, conforme decisão do usuário. Os requisitos aplicáveis ao tratamento de dados de crianças/adolescentes e ao serviço digital exigem avaliação jurídica antes da exposição a usuários reais.
 - A atribuição aluno-profissional não existe. Nenhum profissional terá leitura de anamnese enquanto não houver vínculo registrado e política correspondente.
 
 ## Fora de escopo

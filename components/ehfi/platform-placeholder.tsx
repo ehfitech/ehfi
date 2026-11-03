@@ -9,9 +9,18 @@ import { ThemeToggle } from "@/components/ehfi/theme-toggle"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { entranceProps } from "@/lib/ehfi-motion"
+import type { RegistrationRole } from "@/lib/registration-drafts/types"
+import { signOut } from "@/app/actions/auth"
 
-export function PlatformPlaceholder() {
+const roleLabels: Record<RegistrationRole, string> = {
+  student: "aluno",
+  professional: "profissional",
+  company: "empresa",
+}
+
+export function PlatformPlaceholder({ role }: { role: RegistrationRole }) {
   const reducedMotion = Boolean(useReducedMotion())
+  const roleLabel = roleLabels[role]
 
   return (
     <main className="relative isolate flex min-h-dvh flex-col overflow-hidden px-5 py-5 sm:px-8 sm:py-7">
@@ -29,17 +38,17 @@ export function PlatformPlaceholder() {
       <section className="mx-auto my-auto w-full max-w-3xl py-12">
         <div>
           <motion.div {...entranceProps(0, reducedMotion)}>
-            <Link href="/profissional/sucesso" transitionTypes={["nav-back"]} className="mb-5 inline-flex h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card/55 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40">
+            <Link href="/" transitionTypes={["nav-back"]} className="mb-5 inline-flex h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card/55 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40">
               <IoArrowBackOutline aria-hidden="true" className="size-4" /> Voltar
             </Link>
           </motion.div>
           <Card className="items-center gap-0 rounded-[2rem] border-border/60 bg-card/70 px-6 py-8 text-center shadow-[0_30px_90px_-48px_rgba(31,22,50,0.38)] backdrop-blur-2xl sm:px-12 sm:py-12">
             <motion.p {...entranceProps(0.06, reducedMotion)} className="text-xs font-semibold uppercase tracking-[0.16em] text-ehfi-secondary">Estamos preparando tudo</motion.p>
             <motion.h1 {...entranceProps(0.12, reducedMotion)} className="mt-2 font-heading text-3xl leading-tight font-semibold tracking-[-0.035em] text-foreground sm:text-4xl">
-              Área profissional em breve
+              Área de {roleLabel} em breve
             </motion.h1>
             <motion.p {...entranceProps(0.18, reducedMotion)} className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-              A plataforma da EHFI está em desenvolvimento. Em breve, profissionais poderão encontrar novas formas de se conectar e evoluir.
+              Sua conta de {roleLabel} foi criada e seus dados estão salvos. A área de atendimento da EHFI ainda está em desenvolvimento.
             </motion.p>
             <div className="mt-7 grid w-full gap-3 text-left sm:grid-cols-2">
               <motion.div {...entranceProps(0.24, reducedMotion)}>
@@ -60,9 +69,16 @@ export function PlatformPlaceholder() {
               </motion.div>
             </div>
             <motion.div {...entranceProps(0.36, reducedMotion)} className="w-full sm:w-auto">
-              <Link href="/" transitionTypes={["nav-back"]} className={buttonVariants({ variant: "outline", className: "mt-7 h-12 w-full rounded-xl sm:w-auto" })}>
-                <IoArrowBackOutline aria-hidden="true" className="size-4" /> Voltar para a EHFI
-              </Link>
+              <div className="mt-7 flex flex-col gap-2 sm:flex-row">
+                <Link href="/" transitionTypes={["nav-back"]} className={buttonVariants({ variant: "outline", className: "h-12 w-full rounded-xl sm:w-auto" })}>
+                  <IoArrowBackOutline aria-hidden="true" className="size-4" /> Voltar para a EHFI
+                </Link>
+                <form action={signOut}>
+                  <button type="submit" className={buttonVariants({ variant: "ghost", className: "h-12 w-full rounded-xl sm:w-auto" })}>
+                    Sair da conta
+                  </button>
+                </form>
+              </div>
             </motion.div>
           </Card>
         </div>

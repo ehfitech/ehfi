@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export const metadata: Metadata = {
   title: "Política de Privacidade — EHFI",
-  description: "Como o EHFI prevê tratar dados de profissionais, alunos e empresas.",
+  description: "Dados tratados nos cadastros de alunos, profissionais e empresas da EHFI.",
 }
 
 const sections = [
@@ -16,16 +16,16 @@ const sections = [
     content: (
       <>
         <p>
-          O EHFI utiliza seus dados para criar e manter sua conta profissional,
-          identificar você, entrar em contato sobre o cadastro, verificar sua
-          formação e situação no CREF, apresentar seu perfil e manter registros
-          necessários ao exercício das atividades profissionais regulamentadas.
+          O EHFI utiliza os dados para criar e manter sua conta e seus perfis,
+          processar os cadastros, analisar as informações e documentos
+          profissionais e empresariais, e entrar em contato sobre um cadastro
+          quando houver autorização aplicável.
         </p>
         <p>
           As informações acadêmicas e do CREF, junto aos comprovantes enviados,
-          são utilizadas para conferir a habilitação declarada. A oferta e o
-          atendimento de serviços profissionais dependem da regularização e
-          validação do CREF.
+          são utilizadas para análise do cadastro. O envio de um documento não
+          confirma sua autenticidade ou a regularidade do CREF; não há
+          validação automática nesta versão.
         </p>
       </>
     ),
@@ -88,8 +88,9 @@ const sections = [
           <strong className="font-semibold text-foreground">
             Confirmações:
           </strong>{" "}
-          leitura desta Política, declaração de veracidade e sua escolha sobre
-          comunicações promocionais.
+          leitura desta Política, autorização obrigatória para dados de saúde
+          no cadastro de aluno, autorizações da empresa, declaração de
+          veracidade e sua escolha sobre comunicações promocionais.
         </li>
       </ul>
     ),
@@ -99,9 +100,9 @@ const sections = [
     content: (
       <>
         <p>
-          O perfil profissional poderá exibir seu nome legal, cidade/UF,
-          formação verificada, Instagram profissional informado e número/UF do
-          CREF após a validação do registro.
+          Nesta versão não há perfil profissional público. Uma futura exibição
+          de nome, cidade/UF, formação, Instagram ou informações do CREF
+          exigirá aviso e configuração próprios.
         </p>
         <p>
           CPF, data de nascimento, e-mail, telefone, documentos acadêmicos,
@@ -116,15 +117,20 @@ const sections = [
     content: (
       <>
         <p>
-          As categorias de dados, os fornecedores e as situações de
-          compartilhamento aplicáveis à operação real ainda serão definidos.
-          Nesta demonstração, as respostas dos cadastros não são enviadas nem
-          salvas. A exceção é a consulta do CNPJ no cadastro de empresa,
-          explicada abaixo.
+          Ao concluir o cadastro, os dados informados são gravados na conta
+          EHFI. Antes da conclusão, um rascunho pode ser mantido nos servidores
+          por até 30 dias sem atividade; senhas e confirmações de senha não
+          fazem parte do rascunho. Documentos profissionais ficam em
+          armazenamento privado.
         </p>
         <p>
-          Os períodos de conservação e as medidas de proteção da operação futura
-          também serão definidos antes da ativação da persistência dos dados.
+          A autenticação, o banco de dados e o armazenamento de arquivos usam
+          Supabase. A região do projeto, o provedor de email de recuperação,
+          eventuais transferências e o prazo de conservação após a conclusão
+          da conta ainda precisam ser informados. Os dados de saúde do aluno
+          são guardados separadamente e só são coletados após a autorização
+          obrigatória apresentada no cadastro. A senha é gerenciada pelo
+          Supabase Auth e não é incluída no perfil nem no rascunho.
         </p>
       </>
     ),
@@ -135,8 +141,9 @@ const sections = [
       <p>
         As comunicações promocionais são opcionais e dependem da sua
         autorização, separada das confirmações necessárias ao cadastro. Você
-        pode cancelar essa autorização a qualquer momento pelos canais de
-        atendimento do EHFI, sem afetar sua conta ou os serviços profissionais.
+        pode cancelar essa autorização sem afetar sua conta ou os serviços
+        profissionais. O canal para exercer essa escolha precisa ser informado
+        junto com o contato de privacidade da controladora.
       </p>
     ),
   },
@@ -151,8 +158,9 @@ const sections = [
           e revogação do consentimento quando essa for a base utilizada.
         </p>
         <p>
-          Para exercer seus direitos ou esclarecer dúvidas sobre esta Política,
-          entre em contato com o EHFI pelos canais oficiais de atendimento.
+          A identidade e o canal de contato da controladora ainda precisam ser
+          preenchidos. Esta página, sem esses dados, não informa um canal
+          válido para exercer os direitos dos titulares.
         </p>
       </>
     ),
@@ -201,17 +209,17 @@ function PrivacyPolicyContent() {
                 Política de Privacidade do EHFI
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Esta versão demonstrativa descreve os dados solicitados nos
-                cadastros profissional, de aluno e de empresa e os usos
-                previstos para uma futura operação da EHFI.
+                Esta Política descreve os dados tratados nos cadastros de
+                profissional, aluno e empresa da EHFI. As informações de
+                controladora, contato, bases legais e retenção de contas
+                finalizadas ainda precisam ser completadas.
               </p>
               <p className="mt-3 rounded-xl border border-primary/15 bg-primary/[0.04] p-3 text-sm leading-6 text-muted-foreground">
-                As respostas ficam apenas na memória da página e não são salvas.
-                No cadastro de empresa, o CNPJ completo é encaminhado ao Open
-                CNPJ para consulta; as demais respostas não são enviadas ao
-                EHFI. Use dados fictícios, inclusive para senha, saúde e
-                contato. Os usos descritos abaixo ainda não são realizados por
-                este protótipo.
+                Os cadastros gravam dados pessoais e, no caso de alunos, dados
+                de saúde após consentimento obrigatório. No cadastro de
+                empresa, o CNPJ é encaminhado ao Open CNPJ para consulta.
+                Consulte as categorias e limitações descritas abaixo antes de
+                concluir um cadastro.
               </p>
             </div>
           </CardHeader>
@@ -230,12 +238,11 @@ function PrivacyPolicyContent() {
                 7. Cadastro de empresa e consulta de CNPJ
               </h2>
               <p>
-                O formulário demonstrativo solicita dados cadastrais da
-                empresa, endereço, ramo de atividade, informações do
-                responsável, estrutura e horários de trabalho, interesse e
-                necessidades para ginástica laboral. Os dados são usados apenas
-                para percorrer as etapas e revisar o resumo na própria página;
-                não criam conta ou solicitação e não são salvos.
+                O cadastro solicita dados cadastrais da empresa, endereço,
+                ramo de atividade, informações do responsável, estrutura e
+                horários de trabalho, interesse e necessidades para ginástica
+                laboral. Ao concluir, esses dados são associados à conta e
+                persistidos para análise da solicitação.
               </p>
               <p>
                 Ao completar os 14 dígitos do CNPJ e fazer uma breve pausa, o
@@ -248,12 +255,11 @@ function PrivacyPolicyContent() {
                 campos do responsável.
               </p>
               <p>
-                O CNPJ não é salvo pelo formulário. As demais respostas da
-                empresa não são enviadas ao EHFI nem ao Open CNPJ. Se a consulta
-                não encontrar o registro ou estiver indisponível, os dados
-                cadastrais podem ser preenchidos manualmente. Termos sobre
-                retenção e compartilhamento de uma operação futura serão
-                definidos antes de ela começar.
+                O CNPJ e os demais campos da empresa ficam salvos após a
+                conclusão do cadastro. A consulta externa recebe somente os
+                dígitos do CNPJ; revise e corrija os dados retornados. Se a
+                consulta não encontrar o registro ou estiver indisponível, os
+                dados cadastrais podem ser preenchidos manualmente.
               </p>
               <p>
                 Consulte também os{" "}
@@ -261,7 +267,7 @@ function PrivacyPolicyContent() {
                   href="/termos-de-uso"
                   className="font-medium text-primary underline-offset-4 hover:underline"
                 >
-                  Termos de Uso da demonstração
+                  Termos de Uso
                 </Link>
                 .
               </p>
@@ -271,42 +277,39 @@ function PrivacyPolicyContent() {
                 8. Cadastro de aluno e anamnese
               </h2>
               <p>
-                Em uma futura operação, o cadastro de aluno poderá tratar nome,
+                O cadastro de aluno trata nome,
                 e-mail, telefone, credencial de acesso, data de nascimento,
                 altura, peso opcional, condicionamento físico, prática de
                 exercícios, modalidades, rotina, objetivos e respostas abertas
-                fornecidas pelo aluno.
+                fornecidas pelo aluno. Esses dados são associados à conta após
+                a conclusão do cadastro.
               </p>
               <p>
                 A anamnese também solicita condições de saúde, medicamentos,
                 sintomas, dores, limitações físicas, lesões, cirurgias,
                 restrições recomendadas por profissionais de saúde e, quando
                 aplicável, gestação ou período pós-parto. Essas informações são
-                dados de saúde e serão tratadas somente para a finalidade
-                específica informada de avaliação inicial, planejamento e
-                acompanhamento da prática de exercício físico, mediante a
-                autorização apresentada no cadastro.
+                dados de saúde e serão tratadas para avaliação inicial,
+                planejamento e acompanhamento da prática de exercício físico.
+                A autorização para tratar dados de saúde é obrigatória; sem
+                ela, a anamnese e a criação da conta não prosseguem.
               </p>
               <p>
-                Na operação futura, as respostas de saúde serão destinadas ao
-                profissional responsável pelo acompanhamento do aluno para
-                revisão e planejamento. Não deverão ser exibidas no perfil
-                público. Esta demonstração não associa aluno a profissional e
-                não transmite respostas.
+                As respostas de saúde são armazenadas separadamente e ficam
+                disponíveis somente para o próprio aluno nesta versão. Ainda
+                não existe associação com um profissional nem exibição pública
+                desses dados.
               </p>
               <p>
-                Quando a data de nascimento indicar uma pessoa menor de 18 anos,
-                o protótipo solicita nome, contato e confirmação declaratória de
-                um responsável legal. Esta demonstração não verifica identidade
-                ou responsabilidade. O fluxo de verificação, acesso,
-                compartilhamento, conservação e proteção para a operação real
-                será definido antes da ativação da persistência.
+                Pessoas menores de 18 anos podem criar e usar uma conta nesta
+                versão. O formulário não solicita nem verifica autorização de
+                responsável. Os requisitos legais aplicáveis a crianças e
+                adolescentes ainda precisam de avaliação específica.
               </p>
               <p>
-                Se uma resposta positiva ou incerta exigir revisão profissional,
-                esta demonstração bloqueia a conclusão do cadastro. As respostas
-                não são encaminhadas para avaliação e não há diagnóstico ou
-                liberação automática para exercício.
+                Respostas de saúde que indiquem necessidade de revisão deixam
+                o perfil com status pendente. Esse status não equivale a
+                avaliação clínica, diagnóstico ou liberação para exercício.
               </p>
             </section>
           </CardContent>

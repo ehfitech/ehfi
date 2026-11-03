@@ -62,7 +62,7 @@ export async function GET(
       {
         success: false,
         error: "not_found",
-        message: "Não encontramos esse CNPJ no Open CNPJ.",
+        message: "Não encontramos esse CNPJ.",
       },
       { status: 404 }
     )
@@ -106,7 +106,7 @@ export async function GET(
       {
         success: false,
         error: "not_found",
-        message: "Não encontramos esse CNPJ no Open CNPJ.",
+        message: "Não encontramos esse CNPJ.",
       },
       { status: 404 }
     )

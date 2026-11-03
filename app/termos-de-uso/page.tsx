@@ -6,8 +6,8 @@ import { ThemeToggle } from "@/components/ehfi/theme-toggle"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export const metadata: Metadata = {
-  title: "Termos de Uso da demonstração — EHFI",
-  description: "Termos operacionais do protótipo demonstrativo EHFI.",
+  title: "Termos de Uso — EHFI",
+  description: "Condições de uso das contas e cadastros EHFI.",
 }
 
 function TermsContent() {
@@ -31,52 +31,55 @@ function TermsContent() {
         <Card className="gap-0 rounded-[1.8rem] border-border/60 bg-card/75 p-5 shadow-[0_24px_80px_-42px_rgba(31,22,50,0.34)] backdrop-blur-2xl sm:p-8 lg:p-10">
           <CardHeader className="gap-4 px-0 pb-6">
             <p className="w-fit rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1 text-xs font-semibold tracking-[0.1em] text-primary uppercase">
-              Somente para demonstração
+              Contas e cadastros EHFI
             </p>
             <div>
               <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                Termos de Uso da demonstração
+                Termos de Uso
               </h1>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Estes termos descrevem o funcionamento do protótipo atual do EHFI. Eles não são os termos de uma operação comercial futura.
+                O EHFI permite criar contas de aluno, profissional e empresa. A identificação da entidade responsável e um canal de contato precisam ser preenchidos antes da publicação desta versão para usuários reais.
               </p>
             </div>
           </CardHeader>
 
           <CardContent className="space-y-7 px-0 pb-0 text-sm leading-7 text-muted-foreground">
             <section className="space-y-2">
-              <h2 className="font-heading text-lg font-semibold text-foreground">1. O que esta demonstração faz</h2>
+              <h2 className="font-heading text-lg font-semibold text-foreground">1. Contas e cadastro</h2>
               <p>
-                O cadastro de empresa permite percorrer seis etapas e visualizar como a coleta de informações para ginástica laboral poderá funcionar. Ele não cria conta ou perfil, não envia pedido de atendimento, não gera proposta ou contrato e não inicia uma contratação.
+                Os formulários criam uma conta com e-mail e senha e registram o perfil e as informações fornecidas. A conclusão do cadastro não cria contrato, não garante a prestação de um serviço e não representa confirmação de habilitação profissional ou dos dados informados.
+              </p>
+              <p>
+                Nesta versão, o acesso não depende de confirmação do e-mail. Informe um endereço ao qual você tenha acesso, pois ele será usado para recuperação de senha. Pessoas menores de 18 anos podem criar e usar uma conta; não há fluxo de autorização ou verificação de responsável nesta versão.
               </p>
             </section>
 
             <section className="space-y-2">
               <h2 className="font-heading text-lg font-semibold text-foreground">2. Consulta pública de CNPJ</h2>
               <p>
-                Quando você informa um CNPJ completo, o protótipo envia os 14 dígitos ao Open CNPJ para consultar dados cadastrais públicos, como razão social e endereço. A resposta pode estar incompleta ou desatualizada. Confira os campos preenchidos e corrija-os se necessário; a consulta não é um documento oficial.
+                Quando você informa um CNPJ completo, o EHFI encaminha os 14 dígitos ao Open CNPJ para consultar dados cadastrais públicos, como razão social e endereço. A resposta pode estar incompleta ou desatualizada. Confira os campos preenchidos e corrija-os se necessário; a consulta não é um documento oficial.
               </p>
               <p>
-                As demais respostas ficam apenas na memória da página, não são enviadas ao EHFI e não são salvas por este protótipo. A consulta do CNPJ é a única comunicação externa deste formulário.
+                As respostas do cadastro são armazenadas no EHFI após a conclusão. A consulta externa do CNPJ é independente da gravação do cadastro.
               </p>
             </section>
 
             <section className="space-y-2">
               <h2 className="font-heading text-lg font-semibold text-foreground">3. Informações de contato</h2>
               <p>
-                O campo de autorização para contato é apenas demonstrativo: ninguém entrará em contato com você a partir deste cadastro. Para reduzir a exposição de informações pessoais, use dados de contato fictícios nesta experiência.
+                A autorização de contato é registrada junto ao cadastro da empresa. O formulário não confirma que uma equipe já analisou ou respondeu à solicitação.
               </p>
             </section>
 
             <section className="space-y-2">
               <h2 className="font-heading text-lg font-semibold text-foreground">4. Operação futura</h2>
               <p>
-                Recursos como conta empresarial, edição de perfil, solicitação de profissionais, propostas, contratações e histórico ainda não estão disponíveis. Os termos aplicáveis a uma futura operação serão definidos antes da ativação desses recursos.
+                A plataforma de atendimento, edição de perfil, solicitação de profissionais, propostas, contratações e histórico ainda estão em desenvolvimento. Os dados dos cadastros são persistidos, mas esses recursos ainda não são oferecidos por esta área.
               </p>
             </section>
 
             <p className="border-t border-border/50 pt-5 text-xs leading-5 text-muted-foreground">
-              Consulte também a <Link href="/privacidade#cadastro-empresa" className="font-medium text-primary underline-offset-4 hover:underline">Política de Privacidade do cadastro de empresa</Link>.
+              Consulte também a <Link href="/privacidade#cadastro-empresa" className="font-medium text-primary underline-offset-4 hover:underline">Política de Privacidade do cadastro de empresa</Link>. O período de conservação das contas finalizadas e as informações da controladora ainda precisam ser completados.
             </p>
           </CardContent>
         </Card>

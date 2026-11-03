@@ -24,6 +24,7 @@ import {
 } from "react-icons/io5"
 
 import { SignupStepper } from "@/components/ehfi/signup-stepper"
+import { finalizeStudentRegistration } from "@/app/actions/registrations"
 import {
   StudentChoiceGrid,
   StudentField,
@@ -57,7 +58,6 @@ import {
   exerciseRestrictionOptions,
   fitnessLevelOptions,
   formatStudentBirthDate,
-  getStudentAge,
   healthConditionOptions,
   healthSymptomOptions,
   initialStudentRegistration,
@@ -72,6 +72,8 @@ import {
   validateStudentStep,
 } from "@/lib/student-registration"
 import { formatPhone, formatWithCaret } from "@/lib/professional-registration"
+import { useRegistrationDraft } from "@/hooks/use-registration-draft"
+import { HEALTH_DATA_CONSENT_VERSION } from "@/lib/registration-drafts/types"
 
 const modalityOptions: readonly StudentChoiceOption<ExerciseModality>[] = [
   { value: "strength", title: "Musculação" },
@@ -172,13 +174,12 @@ function ReviewNotice({ error }: { error?: string }) {
       <div>
         <p className="text-sm font-semibold text-foreground">
           {blocked
-            ? "Cadastro não pode ser concluído"
+            ? "Não foi possível concluir o cadastro"
             : "Revisão profissional necessária"}
         </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          Algumas respostas indicam necessidade de revisão profissional. Esta
-          demonstração não encaminha os dados para avaliação, então não é
-          possível concluir o cadastro. Nada é enviado.
+          Algumas respostas precisam de revisão profissional. Você pode criar
+          sua conta; recursos que dependem dessa revisão ficam pendentes.
         </p>
         {error ? (
           <p className="mt-2 text-xs leading-5 text-destructive">{error}</p>
@@ -265,9 +266,31 @@ export function StudentSignup() {
     ReadonlySet<StudentSignupStep>
   >(() => new Set())
   const [form, setForm] = useState(initialStudentRegistration)
+  const draft = useRegistrationDraft("student", form, true)
+  const didRestoreDraft = useRef(false)
+  const [consentPending, setConsentPending] = useState(false)
+  const [consentError, setConsentError] = useState<string | null>(null)
+  const [consentDeclined, setConsentDeclined] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
     useState(false)
+
+  useEffect(() => {
+    if (draft.status === "loading" || didRestoreDraft.current) return
+    didRestoreDraft.current = true
+    const restored = draft.restoredPayload
+    if (!restored) return
+    setForm({
+      ...initialStudentRegistration,
+      ...restored,
+      password: "",
+      passwordConfirmation: "",
+      healthDataConsent:
+        draft.healthConsentVersion === HEALTH_DATA_CONSENT_VERSION,
+    })
+  }, [draft.healthConsentVersion, draft.restoredPayload, draft.status])
   const [keyboardInset, setKeyboardInset] = useState(0)
   const pendingInvalidFocusStep = useRef<StudentSignupStep | null>(null)
 
@@ -322,9 +345,10 @@ export function StudentSignup() {
         Object.keys(errorsByStep.get(currentStep) ?? {}).length === 0
     )
   )
-  const age = getStudentAge(form.birthDate)
-  const isMinor = age !== null && age < 18
   const needsProfessionalReview = requiresProfessionalReview(form)
+  const healthConsentAllowed =
+    form.healthDataConsent &&
+    draft.healthConsentVersion === HEALTH_DATA_CONSENT_VERSION
   const transitionDuration = prefersReducedMotion ? 0 : ehfiMotion.duration.step
 
   function errorFor(field: StudentRegistrationField | "professionalReview") {
@@ -489,18 +513,7 @@ export function StudentSignup() {
 
   function finalizeBirthDate(value: string) {
     const birthDate = formatStudentBirthDate(value)
-    const newAge = getStudentAge(birthDate)
-    setForm((current) => ({
-      ...current,
-      birthDate,
-      ...(newAge !== null && newAge >= 18
-        ? {
-            guardianName: "",
-            guardianContact: "",
-            guardianConfirmed: false,
-          }
-        : {}),
-    }))
+    setForm((current) => ({ ...current, birthDate }))
   }
 
   function scrollToFirstInvalidField(targetStep: StudentSignupStep) {
@@ -534,6 +547,10 @@ export function StudentSignup() {
   }, [prefersReducedMotion, step])
 
   function navigateToStep(nextStep: StudentSignupStep) {
+    if (nextStep > 4 && !healthConsentAllowed) {
+      setConsentError("Autorize o tratamento de dados de saúde antes de continuar.")
+      nextStep = 4
+    }
     if (nextStep === step) return
     pendingInvalidFocusStep.current = null
     setDirection(nextStep > step ? 1 : -1)
@@ -545,6 +562,12 @@ export function StudentSignup() {
   }
 
   function continueToNextStep() {
+    if (step === 4 && !healthConsentAllowed) {
+      setConsentError(
+        "Autorize o tratamento de dados de saúde para continuar ou encerre o cadastro."
+      )
+      return
+    }
     const errors = errorsByStep.get(step) ?? {}
     setAttemptedSteps((current) => new Set(current).add(step))
     if (Object.keys(errors).length > 0) {
@@ -556,8 +579,50 @@ export function StudentSignup() {
     navigateToStep((step + 1) as StudentSignupStep)
   }
 
-  function finishSignup() {
+  async function handleHealthConsent(accepted: boolean) {
+    setConsentPending(true)
+    setConsentError(null)
+    setSubmissionError(null)
+    try {
+      await draft.recordHealthConsent(accepted)
+      if (accepted) {
+        updateForm("healthDataConsent", true)
+        return
+      }
+
+      setForm((current) => ({
+        ...current,
+        conditions: [],
+        otherCondition: "",
+        conditionControl: "",
+        usesMedication: "",
+        medicationName: "",
+        medicationPurpose: "",
+        symptoms: [],
+        symptomDetails: "",
+        limitations: [],
+        limitationDetails: "",
+        injuryHistory: "",
+        injuryDetails: "",
+        exerciseRestriction: "",
+        restrictionDetails: "",
+        pregnancyStatus: "",
+        pregnancyDuration: "",
+        otherHealthInfo: "",
+        healthDataConsent: false,
+      }))
+      await draft.clearDraft()
+      setConsentDeclined(true)
+    } catch {
+      setConsentError("Não foi possível registrar sua escolha. Tente novamente.")
+    } finally {
+      setConsentPending(false)
+    }
+  }
+
+  async function finishSignup() {
     pendingInvalidFocusStep.current = null
+    setSubmissionError(null)
     setAttemptedSteps(new Set(orderedSteps))
     const firstInvalidStep = orderedSteps.find(
       (currentStep) =>
@@ -579,10 +644,24 @@ export function StudentSignup() {
       return
     }
 
-    setForm(initialStudentRegistration)
-    setPasswordVisible(false)
-    setPasswordConfirmationVisible(false)
-    router.push("/aluno/sucesso", { transitionTypes: ["nav-forward"] })
+    setSubmitting(true)
+    try {
+      const result = await finalizeStudentRegistration(form)
+      if (!result.ok) {
+        setSubmissionError(result.message)
+        if (result.code === "health_consent_required") {
+          navigateToStep(4)
+        }
+        return
+      }
+      router.push(result.redirectTo, { transitionTypes: ["nav-forward"] })
+    } catch {
+      setSubmissionError(
+        "Não foi possível concluir agora. Seus dados permanecem nesta tela; tente novamente."
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const fieldReveal = (key: StudentRegistrationField) => errorFor(key)
@@ -597,6 +676,16 @@ export function StudentSignup() {
     form.pregnancyStatus === "pregnant" || form.pregnancyStatus === "postpartum"
   const showOtherModality = form.modalities.includes("other")
   const showOtherGoal = form.goals.includes("other")
+
+  if (draft.status === "loading") {
+    return (
+      <main className="flex min-h-dvh items-center justify-center px-5">
+        <p role="status" className="text-sm text-muted-foreground">
+          Carregando seu cadastro salvo…
+        </p>
+      </main>
+    )
+  }
 
   return (
     <main className="relative isolate min-h-dvh overflow-clip px-4 pt-4 pb-32 sm:px-7 sm:pt-6 sm:pb-10">
@@ -639,12 +728,12 @@ export function StudentSignup() {
           className="lg:sticky lg:top-8"
         >
           <Link
-            href="/"
+            href="/aluno/entrar"
             transitionTypes={["nav-back"]}
             className="mb-5 inline-flex h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card/55 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
           >
             <IoArrowBackOutline aria-hidden="true" className="size-4" /> Voltar
-            ao início
+            ao login
           </Link>
           <p className="text-xs font-semibold tracking-[0.16em] text-ehfi-secondary uppercase">
             Cadastro de aluno
@@ -708,10 +797,26 @@ export function StudentSignup() {
               noValidate
               onSubmit={(event) => {
                 event.preventDefault()
-                if (step === 6) finishSignup()
+                if (step === 6) void finishSignup()
                 else continueToNextStep()
               }}
             >
+              <div className="mb-4 flex justify-end text-sm">
+                <Link
+                  href="/aluno/entrar"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Já tem conta? Entrar
+                </Link>
+              </div>
+              {submissionError ? (
+                <p role="alert" className="mb-4 rounded-xl border border-destructive/25 bg-destructive/[0.04] p-3 text-sm text-destructive">
+                  {submissionError}
+                </p>
+              ) : null}
+              {draft.error ? (
+                <p role="alert" className="mb-4 text-sm text-destructive">{draft.error}</p>
+              ) : null}
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   data-student-step={step}
@@ -747,7 +852,7 @@ export function StudentSignup() {
                           />
                         }
                         title="Identificação e acesso"
-                        subtitle="Crie seu perfil demonstrativo na EHFI."
+                        subtitle="Crie sua conta EHFI para acessar sua área de aluno."
                       />
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="sm:col-span-2">
@@ -812,7 +917,7 @@ export function StudentSignup() {
                         <StudentField
                           id="password"
                           label="Senha"
-                          hint="Não use sua senha real nesta demonstração."
+                          hint="Use ao menos 8 caracteres, com maiúscula, minúscula, número e símbolo."
                           error={fieldReveal("password")}
                         >
                           <StudentIconInput
@@ -854,7 +959,7 @@ export function StudentSignup() {
                               </InputGroupButton>
                             }
                             autoComplete="new-password"
-                            placeholder="Crie uma senha demonstrativa"
+                            placeholder="Crie uma senha segura"
                             value={form.password}
                             onChange={(event) =>
                               updateForm("password", event.target.value)
@@ -1145,8 +1250,10 @@ export function StudentSignup() {
                           />
                         }
                         title="Histórico de saúde"
-                        subtitle="Marque o que se aplica. Algumas respostas exigem revisão profissional e impedem a conclusão deste cadastro."
+                        subtitle="Antes das perguntas, leia o aviso e escolha se autoriza o tratamento dos dados de saúde."
                       />
+                      {healthConsentAllowed ? (
+                        <>
                       <StudentChoiceGrid<HealthCondition>
                         id="conditions"
                         label="Você possui ou já recebeu diagnóstico de alguma condição?"
@@ -1294,6 +1401,58 @@ export function StudentSignup() {
                         </div>
                       </ConditionalBlock>
                       {needsProfessionalReview ? <ReviewNotice /> : null}
+                        </>
+                      ) : consentDeclined ? (
+                        <div className="space-y-4 rounded-2xl border border-border/70 bg-background/50 p-5">
+                          <p role="status" className="text-sm leading-6 text-muted-foreground">
+                            Sem essa autorização não é possível criar uma conta de aluno. Nenhuma resposta de saúde foi coletada e o rascunho foi removido.
+                          </p>
+                          <Button type="button" variant="outline" className="h-11 rounded-xl" onClick={() => router.push("/")}>
+                            Voltar ao início
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/[0.045] p-5">
+                          <div>
+                            <h3 className="font-semibold text-foreground">
+                              Autorização para dados de saúde
+                            </h3>
+                            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                              Autorizo o tratamento dos meus dados de saúde para avaliação inicial, planejamento e acompanhamento da prática de exercício físico, conforme o aviso de privacidade da EHFI. Esta autorização é necessária para criar a conta de aluno.
+                            </p>
+                            <Link
+                              href="/privacidade#cadastro-aluno"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+                            >
+                              Ler aviso de privacidade
+                            </Link>
+                          </div>
+                          {consentError ? (
+                            <p role="alert" className="text-sm text-destructive">{consentError}</p>
+                          ) : null}
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <Button
+                              type="button"
+                              disabled={consentPending}
+                              className="h-11 rounded-xl"
+                              onClick={() => void handleHealthConsent(true)}
+                            >
+                              {consentPending ? "Registrando…" : "Autorizo e continuo"}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              disabled={consentPending}
+                              className="h-11 rounded-xl"
+                              onClick={() => void handleHealthConsent(false)}
+                            >
+                              Não autorizo
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </StudentPanel>
                   ) : step === 5 ? (
                     <StudentPanel>
@@ -1532,71 +1691,6 @@ export function StudentSignup() {
                         </StudentField>
                       </StudentPanel>
 
-                      {isMinor ? (
-                        <StudentPanel>
-                          <StudentSectionTitle
-                            icon={
-                              <IoPersonOutline
-                                aria-hidden="true"
-                                className="size-5"
-                              />
-                            }
-                            title="Responsável legal"
-                            subtitle="Como o cadastro é de uma pessoa menor de 18 anos, um responsável precisa confirmar esta etapa."
-                          />
-                          <div className="grid gap-4 sm:grid-cols-2">
-                            <StudentField
-                              id="guardianName"
-                              label="Nome do responsável"
-                              error={fieldReveal("guardianName")}
-                            >
-                              <StudentIconInput
-                                id="guardianName"
-                                icon={<IoPersonOutline aria-hidden="true" />}
-                                autoComplete="name"
-                                placeholder="Nome completo do responsável"
-                                value={form.guardianName}
-                                onChange={(event) =>
-                                  updateForm("guardianName", event.target.value)
-                                }
-                                {...inputState("guardianName")}
-                              />
-                            </StudentField>
-                            <StudentField
-                              id="guardianContact"
-                              label="E-mail ou telefone do responsável"
-                              hint="Informe um dos dois."
-                              error={fieldReveal("guardianContact")}
-                            >
-                              <StudentIconInput
-                                id="guardianContact"
-                                icon={<IoMailOutline aria-hidden="true" />}
-                                autoComplete="off"
-                                placeholder="responsavel@email.com ou (11) 91234-5678"
-                                value={form.guardianContact}
-                                onChange={(event) =>
-                                  updateForm(
-                                    "guardianContact",
-                                    event.target.value
-                                  )
-                                }
-                                {...inputState("guardianContact", true)}
-                              />
-                            </StudentField>
-                          </div>
-                          <ConfirmationCard
-                            id="guardianConfirmed"
-                            label="Confirmo que sou responsável legal pelo aluno e autorizo o tratamento dos dados de saúde informados para a finalidade apresentada acima."
-                            checked={form.guardianConfirmed}
-                            onCheckedChange={(checked) =>
-                              updateForm("guardianConfirmed", checked)
-                            }
-                            error={fieldReveal("guardianConfirmed")}
-                            description="Nesta demonstração, a confirmação é declaratória e não verifica a identidade ou a responsabilidade legal."
-                          />
-                        </StudentPanel>
-                      ) : null}
-
                       <StudentPanel>
                         <StudentSectionTitle
                           icon={
@@ -1617,27 +1711,6 @@ export function StudentSignup() {
                           }
                           error={fieldReveal("accuracyConfirmed")}
                         />
-                        <ConfirmationCard
-                          id="healthDataConsent"
-                          label="Autorizo o tratamento dos meus dados de saúde para a finalidade específica de avaliação inicial, planejamento e acompanhamento da prática de exercício físico, conforme o aviso de privacidade do EHFI."
-                          checked={form.healthDataConsent}
-                          onCheckedChange={(checked) =>
-                            updateForm("healthDataConsent", checked)
-                          }
-                          error={fieldReveal("healthDataConsent")}
-                          description="Esta autorização é necessária para concluir o cadastro. Nesta demonstração, nenhum dado é enviado ou armazenado."
-                        >
-                          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                            <Link
-                              href="/privacidade#cadastro-aluno"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-medium text-primary underline-offset-4 hover:underline"
-                            >
-                              Ler aviso de privacidade do cadastro de aluno
-                            </Link>
-                          </p>
-                        </ConfirmationCard>
                       </StudentPanel>
 
                       {needsProfessionalReview ? (
@@ -1673,14 +1746,15 @@ export function StudentSignup() {
               <Button
                 form="student-signup-form"
                 type="submit"
+                disabled={submitting}
                 className="h-12 w-full rounded-xl px-5 font-semibold shadow-[0_8px_24px_-10px_color-mix(in_oklch,var(--primary)_65%,transparent)] sm:w-auto"
               >
-                {step === 6 ? "Concluir cadastro" : "Continuar"}
+                {submitting ? "Salvando conta…" : step === 6 ? "Criar conta" : "Continuar"}
                 <IoArrowForwardOutline aria-hidden="true" className="size-4" />
               </Button>
             </div>
             <p className="mx-auto mt-2 max-w-6xl text-center text-[0.68rem] text-muted-foreground sm:hidden">
-              Nenhuma resposta será enviada ou salva.
+              Rascunho salvo automaticamente. Senhas não são armazenadas no rascunho.
             </p>
           </div>
         </section>

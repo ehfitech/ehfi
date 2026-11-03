@@ -15,6 +15,8 @@ import {
   IoCashOutline,
   IoCheckmarkOutline,
   IoDocumentTextOutline,
+  IoEyeOffOutline,
+  IoEyeOutline,
   IoFitnessOutline,
   IoGlobeOutline,
   IoLocationOutline,
@@ -28,20 +30,36 @@ import {
 } from "react-icons/io5"
 
 import { CompanySignupStepper } from "@/components/ehfi/company-signup-stepper"
+import { finalizeCompanyRegistration } from "@/app/actions/registrations"
 import {
   StudentChoiceGrid,
   StudentField,
   StudentIconInput,
   StudentPanel,
+  StudentPasswordStrength as PasswordStrengthIndicator,
   StudentSectionTitle,
   StudentTextarea,
   type StudentChoiceOption,
 } from "@/components/ehfi/student-signup-fields"
 import { ThemeToggle } from "@/components/ehfi/theme-toggle"
+import { useRegistrationDraft } from "@/hooks/use-registration-draft"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -193,21 +211,40 @@ function CompanySelect({
 }) {
   return (
     <CompanyField id={id} label={label} error={error} hint={hint}>
-      <select
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
-        className="h-11 w-full rounded-xl border border-input bg-background/60 px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+      <Combobox
+        items={options.map((option) => option.value)}
+        value={value || null}
+        autoHighlight
+        itemToStringLabel={(item) =>
+          options.find((option) => option.value === item)?.title ?? item
+        }
+        onValueChange={(nextValue) => {
+          onChange(typeof nextValue === "string" ? nextValue : "")
+        }}
       >
-        <option value="">{placeholder}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.title}
-          </option>
-        ))}
-      </select>
+        <ComboboxInput
+          id={id}
+          placeholder={value ? undefined : placeholder}
+          showClear
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          className="h-11 w-full rounded-xl bg-background/60"
+        />
+        <ComboboxContent className="rounded-xl border border-border/60 bg-popover p-1 shadow-xl">
+          <ComboboxEmpty className="px-4 py-5">Nenhuma opção encontrada.</ComboboxEmpty>
+          <ComboboxList className="max-h-64">
+            {(item) => {
+              const option = options.find((candidate) => candidate.value === item)
+              if (!option) return null
+              return (
+                <ComboboxItem key={option.value} value={option.value} className="min-h-11 rounded-lg px-3 py-2.5">
+                  {option.title}
+                </ComboboxItem>
+              )
+            }}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
     </CompanyField>
   )
 }
@@ -291,7 +328,16 @@ function CheckCard({
       initial={prefersReducedMotion ? false : "hidden"}
       whileInView="visible"
       viewport={{ once: true, amount: 0.15 }}
-      className={`rounded-2xl border p-4 transition-colors ${error ? "border-destructive/50 bg-destructive/[0.035]" : "border-border/70 bg-background/50"}`}
+      onClick={(event) => {
+        if (
+          event.target instanceof Element &&
+          event.target.closest("a, button, input, label, [data-slot=checkbox]")
+        ) {
+          return
+        }
+        onCheckedChange(!checked)
+      }}
+      className={`cursor-pointer rounded-2xl border p-4 transition-colors ${error ? "border-destructive/50 bg-destructive/[0.035]" : "border-border/70 bg-background/50"}`}
     >
       <div className="flex items-start gap-3">
         <Checkbox
@@ -368,12 +414,32 @@ export function CompanySignup() {
   const [continuedSteps, setContinuedSteps] = useState<ReadonlySet<CompanySignupStep>>(() => new Set())
   const [attemptedSteps, setAttemptedSteps] = useState<ReadonlySet<CompanySignupStep>>(() => new Set())
   const [form, setForm] = useState(initialCompanyRegistration)
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [passwordConfirmationVisible, setPasswordConfirmationVisible] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submissionError, setSubmissionError] = useState<string | null>(null)
+  const didRestoreDraft = useRef(false)
+  const draft = useRegistrationDraft("company", form)
   const [lookupState, setLookupState] = useState<LookupState>({ status: "idle" })
   const [keyboardInset, setKeyboardInset] = useState(0)
   const [sectorDraft, setSectorDraft] = useState<CompanySector | "">("")
   const [otherSectorDraft, setOtherSectorDraft] = useState("")
   const [shiftDraft, setShiftDraft] = useState<"first" | "second" | "third" | "other" | "">("")
   const [otherShiftDraft, setOtherShiftDraft] = useState("")
+
+  useEffect(() => {
+    if (draft.status === "loading" || didRestoreDraft.current) return
+    didRestoreDraft.current = true
+    if (!draft.restoredPayload) return
+    const restoredForm = {
+      ...initialCompanyRegistration,
+      ...draft.restoredPayload,
+      password: "",
+      passwordConfirmation: "",
+    }
+    draft.markPayloadSaved(restoredForm)
+    setForm(restoredForm)
+  }, [draft.markPayloadSaved, draft.restoredPayload, draft.status])
 
   useEffect(() => {
     const viewport = window.visualViewport
@@ -509,7 +575,8 @@ export function CompanySignup() {
     navigateToStep((step + 1) as CompanySignupStep)
   }
 
-  function finishSignup() {
+  async function finishSignup() {
+    setSubmissionError(null)
     setAttemptedSteps(new Set(allSteps))
     const firstInvalidStep = allSteps.find(
       (currentStep) => Object.keys(errorsByStep.get(currentStep) ?? {}).length > 0
@@ -528,7 +595,19 @@ export function CompanySignup() {
       }
       return
     }
-    router.push("/empresa/sucesso", { transitionTypes: ["nav-forward"] })
+    setSubmitting(true)
+    try {
+      const result = await finalizeCompanyRegistration(form)
+      if (!result.ok) {
+        setSubmissionError(result.message)
+        return
+      }
+      router.push(result.redirectTo, { transitionTypes: ["nav-forward"] })
+    } catch {
+      setSubmissionError("Não foi possível concluir agora. O rascunho foi mantido para tentar novamente.")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   function updateCnpj(event: ChangeEvent<HTMLInputElement>) {
@@ -860,12 +939,20 @@ export function CompanySignup() {
   const currentStepDefinition = companySignupSteps[step - 1]
   const lookupCopy = {
     idle: null,
-    loading: "Consultando o Open CNPJ…",
+    loading: "Consultando CNPJ…",
     found: "Dados cadastrais carregados. Revise e edite o que for necessário.",
     not_found: "Não encontramos esse CNPJ. Confira o número ou preencha os dados manualmente.",
     invalid: "O CNPJ não foi aceito pela consulta. Confira o número e preencha manualmente.",
     unavailable: "A consulta está indisponível agora. Você pode continuar preenchendo manualmente.",
   }[lookupState.status]
+
+  if (draft.status === "loading") {
+    return (
+      <main className="grid min-h-dvh place-items-center px-4">
+        <p role="status" className="text-sm text-muted-foreground">Recuperando seu rascunho…</p>
+      </main>
+    )
+  }
 
   return (
     <main className="relative isolate flex min-h-dvh flex-col overflow-hidden px-4 py-4 sm:px-7 sm:py-6">
@@ -909,14 +996,14 @@ export function CompanySignup() {
         >
           <div>
             <Link
-              href="/"
+              href="/empresa/entrar"
               transitionTypes={["nav-back"]}
               className="mb-3 inline-flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card/55 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
             >
-              <IoArrowBackOutline aria-hidden="true" className="size-4" /> Início
+              <IoArrowBackOutline aria-hidden="true" className="size-4" /> Voltar ao login
             </Link>
             <p className="text-xs font-semibold tracking-[0.14em] text-ehfi-secondary uppercase">
-              Cadastro demonstrativo
+              Cadastro de empresa
             </p>
             <h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               Cadastro de empresa
@@ -926,7 +1013,7 @@ export function CompanySignup() {
             </p>
           </div>
           <p className="max-w-sm text-xs leading-5 text-muted-foreground sm:text-right">
-            Esta demonstração não cria conta nem salva respostas. Apenas o CNPJ é consultado no Open CNPJ.
+            As respostas ficam salvas em um rascunho privado por até 30 dias sem atividade.
           </p>
         </motion.div>
 
@@ -953,7 +1040,7 @@ export function CompanySignup() {
               id="company-signup-form"
               onSubmit={(event) => {
                 event.preventDefault()
-                if (step === 6) finishSignup()
+                if (step === 6) void finishSignup()
                 else continueToNextStep()
               }}
               noValidate
@@ -987,7 +1074,7 @@ export function CompanySignup() {
                         id="cnpj"
                         label="CNPJ"
                         error={errorFor("cnpj")}
-                        hint="Digite os 14 números. A busca começa após uma breve pausa e consulta o Open CNPJ. O endereço registrado pode ser diferente do local das sessões."
+                        hint="Digite os 14 números. A busca começa após uma breve pausa e consulta. O endereço registrado pode ser diferente do local das sessões."
                       >
                         <InputGroup className="h-11 rounded-xl bg-background/60 transition-colors focus-within:bg-background/80">
                           <InputGroupInput
@@ -1145,6 +1232,66 @@ export function CompanySignup() {
                         <CompanyField id="contactEmail" label="E-mail" error={errorFor("contactEmail")}>
                           <StudentIconInput id="contactEmail" type="email" icon={<IoMailOutline aria-hidden="true" />} autoComplete="email" placeholder="voce@empresa.com.br" value={form.contactEmail} onChange={(event) => updateForm("contactEmail", event.target.value)} {...fieldState("contactEmail")} />
                         </CompanyField>
+                        <CompanyField id="password" label="Senha de acesso" error={errorFor("password")} hint="8+ caracteres, com maiúscula, minúscula, número e símbolo.">
+                          <StudentIconInput
+                            id="password"
+                            type={passwordVisible ? "text" : "password"}
+                            icon={<IoShieldCheckmarkOutline aria-hidden="true" />}
+                            autoComplete="new-password"
+                            value={form.password}
+                            onChange={(event) => updateForm("password", event.target.value)}
+                            trailing={
+                              <InputGroupButton
+                                size="icon-sm"
+                                className="size-11 rounded-xl p-0 text-muted-foreground hover:text-foreground"
+                                aria-label={passwordVisible ? "Ocultar senha" : "Mostrar senha"}
+                                aria-pressed={passwordVisible}
+                                title={passwordVisible ? "Ocultar senha" : "Mostrar senha"}
+                                onClick={() => setPasswordVisible((visible) => !visible)}
+                              >
+                                {passwordVisible ? (
+                                  <IoEyeOffOutline aria-hidden="true" className="size-5" />
+                                ) : (
+                                  <IoEyeOutline aria-hidden="true" className="size-5" />
+                                )}
+                              </InputGroupButton>
+                            }
+                            {...fieldState("password", true)}
+                            aria-describedby={[
+                              errorFor("password") ? "password-error" : null,
+                              "password-strength-status",
+                              "password-strength-checklist",
+                            ].filter(Boolean).join(" ")}
+                          />
+                          <PasswordStrengthIndicator password={form.password} />
+                        </CompanyField>
+                        <CompanyField id="passwordConfirmation" label="Confirmar senha" error={errorFor("passwordConfirmation")}>
+                          <StudentIconInput
+                            id="passwordConfirmation"
+                            type={passwordConfirmationVisible ? "text" : "password"}
+                            icon={<IoShieldCheckmarkOutline aria-hidden="true" />}
+                            autoComplete="new-password"
+                            value={form.passwordConfirmation}
+                            onChange={(event) => updateForm("passwordConfirmation", event.target.value)}
+                            trailing={
+                              <InputGroupButton
+                                size="icon-sm"
+                                className="size-11 rounded-xl p-0 text-muted-foreground hover:text-foreground"
+                                aria-label={passwordConfirmationVisible ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+                                aria-pressed={passwordConfirmationVisible}
+                                title={passwordConfirmationVisible ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+                                onClick={() => setPasswordConfirmationVisible((visible) => !visible)}
+                              >
+                                {passwordConfirmationVisible ? (
+                                  <IoEyeOffOutline aria-hidden="true" className="size-5" />
+                                ) : (
+                                  <IoEyeOutline aria-hidden="true" className="size-5" />
+                                )}
+                              </InputGroupButton>
+                            }
+                            {...fieldState("passwordConfirmation")}
+                          />
+                        </CompanyField>
                         <CompanyField id="contactPhone" label="Telefone ou WhatsApp" error={errorFor("contactPhone")}>
                           <StudentIconInput id="contactPhone" type="tel" icon={<IoCallOutline aria-hidden="true" />} inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={form.contactPhone} onChange={updateMaskedPhone} {...fieldState("contactPhone")} />
                         </CompanyField>
@@ -1192,25 +1339,45 @@ export function CompanySignup() {
                           <legend className="text-sm leading-5 font-medium text-foreground/90">Quais setores existem na empresa?</legend>
                           <p id="sectors-hint" className="text-xs leading-5 text-muted-foreground">Adicione cada setor. A quantidade é calculada pela lista.</p>
                           <div className="flex flex-col gap-2 sm:flex-row">
-                            <select
-                              aria-label="Tipo de setor para adicionar"
-                              aria-invalid={errorFor("sectors") && form.sectors.length === 0 ? true : undefined}
-                              aria-describedby={errorFor("sectors") ? "sectors-error" : undefined}
-                              value={sectorDraft}
-                              onChange={(event) => setSectorDraft(event.target.value as CompanySector | "")}
-                              className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background/60 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+                            <Combobox
+                              items={companySectorOptions.map((option) => option.value)}
+                              value={sectorDraft || null}
+                              autoHighlight
+                              itemToStringLabel={(item) =>
+                                companySectorOptions.find((option) => option.value === item)?.title ?? item
+                              }
+                              onValueChange={(nextValue) => {
+                                setSectorDraft(typeof nextValue === "string" ? nextValue as CompanySector : "")
+                              }}
                             >
-                              <option value="">Selecione um setor</option>
-                              {companySectorOptions.map((option) => (
-                                <option
-                                  key={option.value}
-                                  value={option.value}
-                                  disabled={option.value !== "other" && form.sectors.some((sector) => sector.category === option.value)}
-                                >
-                                  {option.title}
-                                </option>
-                              ))}
-                            </select>
+                              <ComboboxInput
+                                aria-label="Tipo de setor para adicionar"
+                                placeholder="Selecione um setor"
+                                showClear
+                                aria-invalid={errorFor("sectors") && form.sectors.length === 0 ? true : undefined}
+                                aria-describedby={errorFor("sectors") ? "sectors-error" : undefined}
+                                className="h-11 min-w-0 flex-1 rounded-xl bg-background/60"
+                              />
+                              <ComboboxContent className="rounded-xl border border-border/60 bg-popover p-1 shadow-xl">
+                                <ComboboxEmpty className="px-4 py-5">Nenhum setor encontrado.</ComboboxEmpty>
+                                <ComboboxList className="max-h-64">
+                                  {(item) => {
+                                    const option = companySectorOptions.find((candidate) => candidate.value === item)
+                                    if (!option) return null
+                                    return (
+                                      <ComboboxItem
+                                        key={option.value}
+                                        value={option.value}
+                                        disabled={option.value !== "other" && form.sectors.some((sector) => sector.category === option.value)}
+                                        className="min-h-11 rounded-lg px-3 py-2.5"
+                                      >
+                                        {option.title}
+                                      </ComboboxItem>
+                                    )
+                                  }}
+                                </ComboboxList>
+                              </ComboboxContent>
+                            </Combobox>
                             {sectorDraft === "other" ? (
                               <input
                                 aria-label="Nome do outro setor"
@@ -1373,20 +1540,53 @@ export function CompanySignup() {
                                 <p className="mt-1 text-xs leading-5 text-muted-foreground">Adicione primeiro, segundo, terceiro e outros turnos conforme necessário.</p>
                               </div>
                               <div className="flex flex-col gap-2 sm:flex-row">
-                                <select
-                                  aria-label="Turno para adicionar"
-                                  aria-invalid={errorFor("shifts") && form.shifts.length === 0 ? true : undefined}
-                                  aria-describedby={errorFor("shifts") ? "shifts-error" : undefined}
-                                  value={shiftDraft}
-                                  onChange={(event) => setShiftDraft(event.target.value as typeof shiftDraft)}
-                                  className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background/60 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+                                <Combobox
+                                  items={["first", "second", "third", "other"]}
+                                  value={shiftDraft || null}
+                                  autoHighlight
+                                  itemToStringLabel={(item) =>
+                                    item === "first"
+                                      ? "Primeiro turno"
+                                      : item === "second"
+                                        ? "Segundo turno"
+                                        : item === "third"
+                                          ? "Terceiro turno"
+                                          : "Outro"
+                                  }
+                                  onValueChange={(nextValue) => {
+                                    setShiftDraft(typeof nextValue === "string" ? nextValue as typeof shiftDraft : "")
+                                  }}
                                 >
-                                  <option value="">Selecione um turno</option>
-                                  <option value="first" disabled={form.shifts.some((shift) => shift.kind === "first")}>Primeiro turno</option>
-                                  <option value="second" disabled={form.shifts.some((shift) => shift.kind === "second")}>Segundo turno</option>
-                                  <option value="third" disabled={form.shifts.some((shift) => shift.kind === "third")}>Terceiro turno</option>
-                                  <option value="other">Outro</option>
-                                </select>
+                                  <ComboboxInput
+                                    aria-label="Turno para adicionar"
+                                    placeholder="Selecione um turno"
+                                    showClear
+                                    aria-invalid={errorFor("shifts") && form.shifts.length === 0 ? true : undefined}
+                                    aria-describedby={errorFor("shifts") ? "shifts-error" : undefined}
+                                    className="h-11 min-w-0 flex-1 rounded-xl bg-background/60"
+                                  />
+                                  <ComboboxContent className="rounded-xl border border-border/60 bg-popover p-1 shadow-xl">
+                                    <ComboboxEmpty className="px-4 py-5">Nenhum turno encontrado.</ComboboxEmpty>
+                                    <ComboboxList className="max-h-64">
+                                      {(item) => (
+                                        <ComboboxItem
+                                          key={item}
+                                          value={item}
+                                          disabled={item !== "other" && form.shifts.some((shift) => shift.kind === item)}
+                                          className="min-h-11 rounded-lg px-3 py-2.5"
+                                        >
+                                          {item === "first"
+                                            ? "Primeiro turno"
+                                            : item === "second"
+                                              ? "Segundo turno"
+                                              : item === "third"
+                                                ? "Terceiro turno"
+                                                : "Outro"}
+                                        </ComboboxItem>
+                                      )}
+                                    </ComboboxList>
+                                  </ComboboxContent>
+                                </Combobox>
                                 {shiftDraft === "other" ? (
                                   <input aria-label="Nome do outro turno" value={otherShiftDraft} onChange={(event) => setOtherShiftDraft(event.target.value)} placeholder="Nome do turno" className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background/60 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40" />
                                 ) : null}
@@ -1595,22 +1795,22 @@ export function CompanySignup() {
                         <StudentSectionTitle
                           icon={<IoShieldCheckmarkOutline aria-hidden="true" className="size-5" />}
                           title="Termos e confirmações"
-                          subtitle="Leia os documentos e confirme cada declaração para concluir a demonstração."
+                          subtitle="Leia os documentos e confirme cada declaração para concluir o cadastro."
                         />
                         <CheckCard
                           id="termsAccepted"
-                          label="Li e aceito os Termos de Uso desta demonstração."
+                          label="Li e aceito os Termos de Uso."
                           checked={form.termsAccepted}
                           onCheckedChange={(checked) => updateForm("termsAccepted", checked)}
                           error={errorFor("termsAccepted")}
                         >
                           <Link href="/termos-de-uso" target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex rounded-sm text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40">
-                            Ler Termos de Uso da demonstração
+                            Ler Termos de Uso
                           </Link>
                         </CheckCard>
                         <CheckCard
                           id="privacyAcknowledged"
-                          label="Li a Política de Privacidade e entendi que o CNPJ será consultado no Open CNPJ."
+                          label="Li a Política de Privacidade e entendi que o CNPJ será consultado."
                           checked={form.privacyAcknowledged}
                           onCheckedChange={(checked) => updateForm("privacyAcknowledged", checked)}
                           error={errorFor("privacyAcknowledged")}
@@ -1625,7 +1825,7 @@ export function CompanySignup() {
                           checked={form.contactAuthorized}
                           onCheckedChange={(checked) => updateForm("contactAuthorized", checked)}
                           error={errorFor("contactAuthorized")}
-                          description="Esta autorização é demonstrativa; nenhum contato será realizado por este protótipo."
+                          description="Essa autorização permite que a equipe EHFI entre em contato sobre o cadastro."
                         />
                         <CheckCard
                           id="accuracyConfirmed"
@@ -1663,14 +1863,16 @@ export function CompanySignup() {
             <Button
               form="company-signup-form"
               type="submit"
+              disabled={submitting || draft.status === "loading"}
               className="h-12 w-full rounded-xl px-5 font-semibold shadow-[0_8px_24px_-10px_color-mix(in_oklch,var(--primary)_65%,transparent)] sm:w-auto"
             >
-              {step === 6 ? "Concluir cadastro" : "Continuar"}
+              {step === 6 && submitting ? "Salvando cadastro…" : step === 6 ? "Concluir cadastro" : "Continuar"}
               <IoArrowForwardOutline aria-hidden="true" className="size-4" />
             </Button>
           </div>
-          <p className="mx-auto mt-2 max-w-6xl text-center text-[0.68rem] text-muted-foreground sm:hidden">
-            Nenhuma resposta será enviada ao EHFI ou salva.
+          {submissionError ? <p role="alert" className="mx-auto mt-2 max-w-6xl text-center text-sm text-destructive">{submissionError}</p> : null}
+          <p className="mx-auto mt-2 max-w-6xl text-center text-xs text-muted-foreground">
+            {draft.status === "saving" ? "Salvando rascunho…" : draft.status === "saved" ? "Rascunho salvo por até 30 dias sem atividade." : draft.status === "error" ? draft.error : <>Já tem conta? <Link href="/empresa/entrar" className="font-medium text-primary underline-offset-4 hover:underline">Entrar</Link></>}
           </p>
         </div>
       </section>

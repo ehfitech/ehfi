@@ -114,8 +114,7 @@ export function WelcomeScreen() {
           <RoleCard />
 
           <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
-            Demonstração: as respostas não são salvas; o CNPJ é consultado no
-            Open CNPJ.
+            Entre com seu perfil ou escolha “Criar conta” na tela de acesso.
           </p>
         </motion.section>
       </div>

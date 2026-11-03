@@ -132,6 +132,7 @@ export async function getStudentActivityDetails(activityId: string): Promise<Stu
   ])
   if (bookingResult.error || discoverableResult.error) throw new Error("student_activity_load_failed")
   let activity = discoverableResult.data?.[0] ?? null
+  const isDiscoverable = Boolean(activity)
 
   if (!activity && bookingResult.data) {
     const { data, error } = await supabase.rpc("get_student_booking_activity", { p_activity_id: activityId })
@@ -150,7 +151,7 @@ export async function getStudentActivityDetails(activityId: string): Promise<Stu
       (bookingStatus === null || bookingStatus === "cancelled_by_student") &&
       startsInFuture &&
       activity.status === "published" &&
-      !activity.professional_profile_hidden &&
+      isDiscoverable &&
       activity.places_remaining > 0,
   }
 }

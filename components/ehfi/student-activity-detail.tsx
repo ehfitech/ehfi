@@ -58,7 +58,7 @@ export function StudentActivityDetail({ details }: { details: StudentActivityDet
   function handleReserve() {
     startTransition(async () => {
       const result = await reserveActivity(activity.activity_id)
-      setNotice({ message: result.message, ok: result.ok })
+      setNotice({ message: result.message ?? (result.ok ? "Vaga reservada." : "Não foi possível reservar a vaga."), ok: result.ok })
     })
   }
 
@@ -67,7 +67,7 @@ export function StudentActivityDetail({ details }: { details: StudentActivityDet
     if (!window.confirm("Deseja cancelar sua reserva? A vaga voltará a ficar disponível para outro aluno.")) return
     startTransition(async () => {
       const result = await cancelStudentBooking(details.bookingId as string)
-      setNotice({ message: result.message, ok: result.ok })
+      setNotice({ message: result.message ?? (result.ok ? "Reserva cancelada." : "Não foi possível cancelar a reserva."), ok: result.ok })
     })
   }
 

@@ -133,7 +133,7 @@ export function ProfessionalAgenda({
     if (!window.confirm(`Deseja ${action}? ${consequence}`)) return
     startCancel(async () => {
       const result = await cancelProfessionalActivity(activity.activity_id)
-      setNotice({ message: result.message, ok: result.ok })
+      setNotice({ message: result.message ?? (result.ok ? "Atividade cancelada." : "Não foi possível cancelar a atividade."), ok: result.ok })
     })
   }
 

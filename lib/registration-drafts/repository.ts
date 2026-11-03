@@ -86,7 +86,8 @@ export async function readRegistrationDraft(
     .maybeSingle()
 
   if (error) throw new Error("Não foi possível carregar o rascunho.")
-  return data
+  if (!data) return null
+  return { ...data, role }
 }
 
 export async function createRegistrationDraft(role: RegistrationRole) {

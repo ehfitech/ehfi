@@ -74,7 +74,7 @@ async function authenticateOrCreate(
   const { data: current } = await supabase.auth.getClaims()
   const currentUserId = current?.claims?.sub
   if (typeof currentUserId === "string") {
-    const currentEmail = current.claims?.email
+    const currentEmail = current?.claims?.email
     if (
       typeof currentEmail !== "string" ||
       currentEmail.toLowerCase() !== normalizedEmail
@@ -305,13 +305,11 @@ export async function finalizeProfessionalRegistration(
 
   let documents: Awaited<ReturnType<typeof stageDraftFilesForUser>>
   try {
-    const selectedKinds = new Set<DraftFileReference["kind"]>([
-      ...(getRequiredProof(payload.academic)
-        ? [getRequiredProof(payload.academic)!]
-        : []),
-      ...(payload.cref.answer === "registered" ? ["cref-card"] : []),
-      ...(payload.cref.answer === "awaiting" ? ["cref-request"] : []),
-    ])
+    const selectedKinds = new Set<DraftFileReference["kind"]>()
+    const requiredProof = getRequiredProof(payload.academic)
+    if (requiredProof) selectedKinds.add(requiredProof)
+    if (payload.cref.answer === "registered") selectedKinds.add("cref-card")
+    if (payload.cref.answer === "awaiting") selectedKinds.add("cref-request")
     const allowedSourcePaths = referencesFromJson(draftState.draft.files)
       .filter((file) => selectedKinds.has(file.kind))
       .map((file) => file.path)

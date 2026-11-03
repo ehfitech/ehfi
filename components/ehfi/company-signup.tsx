@@ -1863,7 +1863,7 @@ export function CompanySignup() {
             <Button
               form="company-signup-form"
               type="submit"
-              disabled={submitting || draft.status === "loading"}
+              disabled={submitting}
               className="h-12 w-full rounded-xl px-5 font-semibold shadow-[0_8px_24px_-10px_color-mix(in_oklch,var(--primary)_65%,transparent)] sm:w-auto"
             >
               {step === 6 && submitting ? "Salvando cadastro…" : step === 6 ? "Concluir cadastro" : "Continuar"}

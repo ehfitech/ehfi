@@ -28,7 +28,6 @@ export function RoleCard() {
       className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
       <motion.div
-        data-ehfi-reveal
         {...entranceProps(0.06, reducedMotion)}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
         className="rounded-xl"
@@ -71,7 +70,6 @@ export function RoleCard() {
       </motion.div>
 
       <motion.div
-        data-ehfi-reveal
         {...entranceProps(0.12, reducedMotion)}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
         className="rounded-xl"
@@ -113,7 +111,6 @@ export function RoleCard() {
       </motion.div>
 
       <motion.div
-        data-ehfi-reveal
         {...entranceProps(0.18, reducedMotion)}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
         className="rounded-xl"

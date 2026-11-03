@@ -920,14 +920,14 @@ export function ProfessionalSignup() {
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="sm:col-span-2">
                             <FormField id="fullName" label="Nome completo" error={fieldError("fullName")} revealOrder={1}>
-                              <IconInput icon={<IoPersonOutline aria-hidden="true" />} id="fullName" autoComplete="name" placeholder="Ex.: Ana Souza" value={personal.fullName} onChange={(event) => updatePersonal("fullName", event.target.value)} {...fieldProps("fullName", fieldError("fullName"))} />
+                              <IconInput icon={<IoPersonOutline aria-hidden="true" />} autoComplete="name" placeholder="Ex.: Ana Souza" value={personal.fullName} onChange={(event) => updatePersonal("fullName", event.target.value)} {...fieldProps("fullName", fieldError("fullName"))} />
                             </FormField>
                           </div>
                           <FormField id="birthDate" label="Data de nascimento" error={fieldError("birthDate")} hint="Dia, mês e ano" revealOrder={2}>
-                              <IconInput icon={<IoCalendarOutline aria-hidden="true" />} id="birthDate" type="text" inputMode="numeric" autoComplete="bday" placeholder="DD/MM/AAAA" maxLength={10} value={personal.birthDate} onChange={(event) => updateMaskedPersonal("birthDate", event, formatBirthDate)} onBlur={(event) => updatePersonal("birthDate", formatBirthDate(event.currentTarget.value))} {...fieldProps("birthDate", fieldError("birthDate"))} />
+                              <IconInput icon={<IoCalendarOutline aria-hidden="true" />} type="text" inputMode="numeric" autoComplete="bday" placeholder="DD/MM/AAAA" maxLength={10} value={personal.birthDate} onChange={(event) => updateMaskedPersonal("birthDate", event, formatBirthDate)} onBlur={(event) => updatePersonal("birthDate", formatBirthDate(event.currentTarget.value))} {...fieldProps("birthDate", fieldError("birthDate"))} />
                           </FormField>
                           <FormField id="cpf" label="CPF" error={fieldError("cpf")} revealOrder={3}>
-                            <IconInput icon={<IoCardOutline aria-hidden="true" />} id="cpf" type="text" inputMode="numeric" autoComplete="off" placeholder="000.000.000-00" maxLength={14} value={personal.cpf} onChange={(event) => updateMaskedPersonal("cpf", event, formatCpf)} onBlur={(event) => updatePersonal("cpf", formatCpf(event.currentTarget.value))} {...fieldProps("cpf", fieldError("cpf"))} />
+                            <IconInput icon={<IoCardOutline aria-hidden="true" />} type="text" inputMode="numeric" autoComplete="off" placeholder="000.000.000-00" maxLength={14} value={personal.cpf} onChange={(event) => updateMaskedPersonal("cpf", event, formatCpf)} onBlur={(event) => updatePersonal("cpf", formatCpf(event.currentTarget.value))} {...fieldProps("cpf", fieldError("cpf"))} />
                           </FormField>
                         </div>
                       </Panel>
@@ -937,11 +937,11 @@ export function ProfessionalSignup() {
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="sm:col-span-2">
                             <FormField id="email" label="E-mail" error={fieldError("email")} revealOrder={1}>
-                              <IconInput icon={<IoMailOutline aria-hidden="true" />} id="email" type="email" inputMode="email" autoComplete="email" placeholder="voce@email.com" value={personal.email} onChange={(event) => updatePersonal("email", event.target.value)} {...fieldProps("email", fieldError("email"))} />
+                              <IconInput icon={<IoMailOutline aria-hidden="true" />} type="email" inputMode="email" autoComplete="email" placeholder="voce@email.com" value={personal.email} onChange={(event) => updatePersonal("email", event.target.value)} {...fieldProps("email", fieldError("email"))} />
                             </FormField>
                           </div>
                           <FormField id="phone" label="Telefone / WhatsApp" error={fieldError("phone")} revealOrder={2}>
-                            <IconInput icon={<IoCallOutline aria-hidden="true" />} id="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" maxLength={16} value={personal.phone} onChange={(event) => updateMaskedPersonal("phone", event, formatPhone)} onBlur={(event) => updatePersonal("phone", formatPhone(event.currentTarget.value))} {...fieldProps("phone", fieldError("phone"))} />
+                            <IconInput icon={<IoCallOutline aria-hidden="true" />} type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" maxLength={16} value={personal.phone} onChange={(event) => updateMaskedPersonal("phone", event, formatPhone)} onBlur={(event) => updatePersonal("phone", formatPhone(event.currentTarget.value))} {...fieldProps("phone", fieldError("phone"))} />
                           </FormField>
                         </div>
                       </Panel>
@@ -952,7 +952,6 @@ export function ProfessionalSignup() {
                           <FormField id="password" label="Senha" error={fieldError("password")} hint="8+ caracteres, com maiúscula, minúscula, número e símbolo." revealOrder={3}>
                             <IconInput
                               icon={<IoShieldCheckmarkOutline aria-hidden="true" />}
-                              id="password"
                               type={passwordVisible ? "text" : "password"}
                               autoComplete="new-password"
                               value={personal.password}
@@ -976,7 +975,6 @@ export function ProfessionalSignup() {
                           <FormField id="passwordConfirmation" label="Confirmar senha" error={fieldError("passwordConfirmation")} revealOrder={4}>
                             <IconInput
                               icon={<IoShieldCheckmarkOutline aria-hidden="true" />}
-                              id="passwordConfirmation"
                               type={passwordConfirmationVisible ? "text" : "password"}
                               autoComplete="new-password"
                               value={personal.passwordConfirmation}
@@ -998,10 +996,10 @@ export function ProfessionalSignup() {
                         <SectionTitle icon={<IoLocationOutline aria-hidden="true" className="size-5" />} title="Localização" subtitle="Onde você atende ou estuda?" />
                         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem]">
                           <FormField id="city" label="Cidade" error={fieldError("city")} revealOrder={1}>
-                            <IconInput icon={<IoLocationOutline aria-hidden="true" />} id="city" autoComplete="address-level2" placeholder="Sua cidade" value={personal.city} onChange={(event) => updatePersonal("city", event.target.value)} {...fieldProps("city", fieldError("city"))} />
+                            <IconInput icon={<IoLocationOutline aria-hidden="true" />} autoComplete="address-level2" placeholder="Sua cidade" value={personal.city} onChange={(event) => updatePersonal("city", event.target.value)} {...fieldProps("city", fieldError("city"))} />
                           </FormField>
                           <FormField id="state" label="Estado" error={fieldError("state")} hint="UF" revealOrder={2}>
-                            <IconInput icon={<IoMapOutline aria-hidden="true" />} id="state" autoComplete="address-level1" placeholder="SP" maxLength={2} value={personal.state} onChange={(event) => updatePersonal("state", event.target.value.replace(/[^a-z]/gi, "").slice(0, 2).toUpperCase())} {...fieldProps("state", fieldError("state"))} />
+                            <IconInput icon={<IoMapOutline aria-hidden="true" />} autoComplete="address-level1" placeholder="SP" maxLength={2} value={personal.state} onChange={(event) => updatePersonal("state", event.target.value.replace(/[^a-z]/gi, "").slice(0, 2).toUpperCase())} {...fieldProps("state", fieldError("state"))} />
                           </FormField>
                         </div>
                       </Panel>
@@ -1020,11 +1018,11 @@ export function ProfessionalSignup() {
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="sm:col-span-2">
                             <FormField id="institution" label="Instituição de ensino" error={academicError("institution")} revealOrder={1}>
-                              <IconInput icon={<IoBusinessOutline aria-hidden="true" />} id="institution" autoComplete="organization" placeholder="Nome da instituição" value={academic.institution} onChange={(event) => updateAcademic("institution", event.target.value)} {...fieldProps("institution", academicError("institution"))} />
+                              <IconInput icon={<IoBusinessOutline aria-hidden="true" />} autoComplete="organization" placeholder="Nome da instituição" value={academic.institution} onChange={(event) => updateAcademic("institution", event.target.value)} {...fieldProps("institution", academicError("institution"))} />
                             </FormField>
                           </div>
                           <FormField id="course" label="Curso" error={academicError("course")} revealOrder={2}>
-                            <IconInput icon={<IoBookOutline aria-hidden="true" />} id="course" placeholder="Ex.: Educação Física" value={academic.course} onChange={(event) => updateAcademic("course", event.target.value)} {...fieldProps("course", academicError("course"))} />
+                            <IconInput icon={<IoBookOutline aria-hidden="true" />} placeholder="Ex.: Educação Física" value={academic.course} onChange={(event) => updateAcademic("course", event.target.value)} {...fieldProps("course", academicError("course"))} />
                           </FormField>
                           <FormField id="formationType" label="Tipo de formação" error={academicError("formationType")} revealOrder={3}>
                             <Combobox
@@ -1079,7 +1077,7 @@ export function ProfessionalSignup() {
                           {academic.formationType === "Outro" ? (
                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: transitionDuration }} className="overflow-hidden sm:col-span-2">
                               <FormField id="otherFormation" label="Qual é a formação?" error={academicError("otherFormation")} revealOrder={1}>
-                                <IconInput icon={<IoSchoolOutline aria-hidden="true" />} id="otherFormation" placeholder="Descreva sua formação" value={academic.otherFormation} onChange={(event) => updateAcademic("otherFormation", event.target.value)} {...fieldProps("otherFormation", academicError("otherFormation"))} />
+                                <IconInput icon={<IoSchoolOutline aria-hidden="true" />} placeholder="Descreva sua formação" value={academic.otherFormation} onChange={(event) => updateAcademic("otherFormation", event.target.value)} {...fieldProps("otherFormation", academicError("otherFormation"))} />
                               </FormField>
                             </motion.div>
                           ) : null}
@@ -1100,7 +1098,7 @@ export function ProfessionalSignup() {
                         {academic.status ? (
                           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: transitionDuration }} className="mt-5 overflow-hidden">
                             <FormField id="year" label={academic.status === "completed" ? "Ano de conclusão" : "Ano previsto de conclusão"} error={academicError("year")} revealOrder={1}>
-                              <IconInput icon={<IoCalendarOutline aria-hidden="true" />} id="year" inputMode="numeric" placeholder="AAAA" maxLength={4} value={academic.year} onChange={(event) => updateAcademic("year", event.target.value.replace(/\D/g, "").slice(0, 4))} {...fieldProps("year", academicError("year"))} />
+                              <IconInput icon={<IoCalendarOutline aria-hidden="true" />} inputMode="numeric" placeholder="AAAA" maxLength={4} value={academic.year} onChange={(event) => updateAcademic("year", event.target.value.replace(/\D/g, "").slice(0, 4))} {...fieldProps("year", academicError("year"))} />
                             </FormField>
                           </motion.div>
                         ) : null}
@@ -1209,7 +1207,7 @@ export function ProfessionalSignup() {
                                 </Combobox>
                               </FormField>
                               <FormField id="crefRegistrationNumber" label="Número de registro profissional" error={crefError("registrationNumber")} revealOrder={2}>
-                                <IconInput icon={<IoCardOutline aria-hidden="true" />} id="crefRegistrationNumber" placeholder="Ex.: 000000-G/SP" value={cref.registrationNumber} onChange={(event) => updateCref("registrationNumber", event.target.value)} {...fieldProps("crefRegistrationNumber", crefError("registrationNumber"))} />
+                                <IconInput icon={<IoCardOutline aria-hidden="true" />} placeholder="Ex.: 000000-G/SP" value={cref.registrationNumber} onChange={(event) => updateCref("registrationNumber", event.target.value)} {...fieldProps("crefRegistrationNumber", crefError("registrationNumber"))} />
                               </FormField>
                             </div>
 
@@ -1237,7 +1235,7 @@ export function ProfessionalSignup() {
                         {cref.answer === "awaiting" ? (
                           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: transitionDuration }} className="mt-5 space-y-5 overflow-hidden">
                             <FormField id="crefRequestSituation" label="Situação da solicitação" error={crefError("requestSituation")} hint="Conte quando solicitou o registro e em que etapa o pedido está." revealOrder={1}>
-                              <Textarea id="crefRequestSituation" rows={4} placeholder="Descreva o andamento da sua solicitação" value={cref.requestSituation} onChange={(event) => updateCref("requestSituation", event.target.value)} {...fieldProps("crefRequestSituation", crefError("requestSituation"))} className="min-h-28 rounded-xl bg-background/60 text-sm" />
+                              <Textarea rows={4} placeholder="Descreva o andamento da sua solicitação" value={cref.requestSituation} onChange={(event) => updateCref("requestSituation", event.target.value)} {...fieldProps("crefRequestSituation", crefError("requestSituation"))} className="min-h-28 rounded-xl bg-background/60 text-sm" />
                             </FormField>
                             <PrivatePdfUpload
                               kind="cref-request"
@@ -1353,10 +1351,10 @@ export function ProfessionalSignup() {
                                 <p className="text-xs leading-5 text-muted-foreground">Informe início e término para indicar um intervalo geral nos dias selecionados. Para um período que passe da meia-noite, informe o horário de início e o de término normalmente.</p>
                                 <div className="grid gap-4 sm:grid-cols-2">
                                   <FormField id="laborSpecificStartTime" label="Horário de início" error={laborError("specificStartTime")} revealOrder={1}>
-                                    <IconInput icon={<IoTimeOutline aria-hidden="true" />} id="laborSpecificStartTime" type="time" value={labor.specificStartTime} onChange={(event) => updateLabor("specificStartTime", event.target.value)} {...fieldProps("laborSpecificStartTime", laborError("specificStartTime"))} />
+                                    <IconInput icon={<IoTimeOutline aria-hidden="true" />} type="time" value={labor.specificStartTime} onChange={(event) => updateLabor("specificStartTime", event.target.value)} {...fieldProps("laborSpecificStartTime", laborError("specificStartTime"))} />
                                   </FormField>
                                   <FormField id="laborSpecificEndTime" label="Horário de término" error={laborError("specificEndTime")} revealOrder={2}>
-                                    <IconInput icon={<IoTimeOutline aria-hidden="true" />} id="laborSpecificEndTime" type="time" value={labor.specificEndTime} onChange={(event) => updateLabor("specificEndTime", event.target.value)} {...fieldProps("laborSpecificEndTime", laborError("specificEndTime"))} />
+                                    <IconInput icon={<IoTimeOutline aria-hidden="true" />} type="time" value={labor.specificEndTime} onChange={(event) => updateLabor("specificEndTime", event.target.value)} {...fieldProps("laborSpecificEndTime", laborError("specificEndTime"))} />
                                   </FormField>
                                 </div>
                               </div>

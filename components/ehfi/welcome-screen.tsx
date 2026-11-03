@@ -51,7 +51,6 @@ export function WelcomeScreen() {
       <div className="mx-auto my-auto flex w-full max-w-6xl flex-col gap-10 py-12 lg:gap-12 lg:py-16">
         <section className="mx-auto w-full max-w-3xl text-center lg:mx-0 lg:text-left">
           <motion.h1
-            data-ehfi-reveal
             {...entranceProps(0.06, reducedMotion)}
             className="mx-auto mt-5 max-w-[15ch] font-heading text-4xl leading-[1.04] font-semibold tracking-[-0.045em] text-foreground sm:text-5xl lg:mx-0 lg:text-[3.7rem]"
           >
@@ -59,7 +58,6 @@ export function WelcomeScreen() {
           </motion.h1>
 
           <motion.p
-            data-ehfi-reveal
             {...entranceProps(0.12, reducedMotion)}
             className="mx-auto mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg lg:mx-0"
           >
@@ -68,7 +66,6 @@ export function WelcomeScreen() {
           </motion.p>
 
           <motion.div
-            data-ehfi-reveal
             {...entranceProps(0.18, reducedMotion)}
             className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-3 text-sm font-medium text-foreground/80 lg:justify-start"
             aria-label="Áreas de atuação"
@@ -98,7 +95,6 @@ export function WelcomeScreen() {
         </section>
 
         <motion.section
-          data-ehfi-reveal
           {...entranceProps(0.24, reducedMotion)}
           className="w-full rounded-[1.75rem] border border-border/70 bg-card/65 p-5 shadow-[0_28px_80px_-38px_rgba(15,23,42,0.32)] backdrop-blur-2xl sm:p-7 lg:p-8"
         >
@@ -120,7 +116,6 @@ export function WelcomeScreen() {
       </div>
 
       <motion.footer
-        data-ehfi-reveal
         {...entranceProps(0.42, reducedMotion)}
         className="mx-auto mt-2 flex w-full max-w-6xl items-center justify-between gap-4 border-t border-border/50 pt-4 text-xs text-muted-foreground"
       >

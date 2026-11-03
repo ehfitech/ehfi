@@ -1,10 +1,16 @@
-import { PageTransition } from "@/components/ehfi/page-transition"
-import { PlatformPlaceholder } from "@/components/ehfi/platform-placeholder"
-import { getAuthorizedProfile } from "@/lib/auth/roles"
-import { redirect } from "next/navigation"
+import { StudentDashboard } from "@/components/ehfi/student-dashboard"
+import { getStudentDashboard } from "@/lib/activities/student-queries"
 
 export default async function StudentPlatformPage() {
-  const profile = await getAuthorizedProfile("student")
-  if (!profile) redirect("/aluno/entrar?next=%2Faluno%2Fplataforma")
-  return <PageTransition><PlatformPlaceholder role="student" /></PageTransition>
+  try {
+    const data = await getStudentDashboard()
+    return <StudentDashboard data={data} />
+  } catch {
+    return (
+      <section className="mx-auto max-w-3xl rounded-[1.7rem] border border-border/70 bg-card/80 p-6 shadow-sm sm:p-9">
+        <p className="font-heading text-lg font-semibold text-foreground">Não foi possível carregar sua jornada.</p>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">Atualize a página e confira se a migração da plataforma de atividades já foi aplicada ao Supabase.</p>
+      </section>
+    )
+  }
 }

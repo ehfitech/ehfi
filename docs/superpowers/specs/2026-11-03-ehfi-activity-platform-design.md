@@ -1,6 +1,6 @@
 # EHFI — agenda profissional e atividades para alunos
 
-**Status:** proposta de desenho para revisão do usuário; não aprovada para implementação  
+**Status:** aprovado pelo usuário para implementação em 2026-11-03  
 **Data:** 2026-11-03
 
 ## Intenção

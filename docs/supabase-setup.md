@@ -18,9 +18,13 @@ Use the same variables in the deployment provider's server/runtime configuration
 
 ## 2. Apply the database migration
 
-Apply `supabase/migrations/202611030001_ehfi_auth_profiles.sql` to the intended Supabase project using the SQL Editor or the Supabase CLI connected to that project. Review the SQL editor output and confirm the tables, RLS policies, three finalization functions, and `professional-documents` bucket exist.
+Apply `supabase/migrations/202611030001_ehfi_auth_profiles.sql` and then `supabase/migrations/202611030002_ehfi_activity_platform.sql` to the intended Supabase project using the SQL Editor or the Supabase CLI connected to that project. Review the SQL editor output and confirm the tables, RLS policies, registration functions, activity/booking functions, and `professional-documents` bucket exist.
 
 The migration creates the bucket as private, permits PDF uploads up to 10 MiB, enables RLS on all application tables, and limits direct authenticated table access to reads allowed by ownership/membership policies. Finalization functions bind requests to the authenticated user and a server-created, unexpired draft token hash. Do not replace those functions with client-side direct inserts.
+
+The activity migration adds an explicitly editable public professional profile, dated activities, and booking history. Professionals can read their own activities and manage only their public profile. Students can read only their own booking rows. Activity creation, cancellation, discovery, and participant projections use scoped functions that check `auth.uid()` and the required role. The participant function returns only a first name and surname initial; it does not grant access to student contact, private registration, or health data. Reservation capacity and overlapping schedules are checked transactionally in Postgres. Applying these source migrations is an operator action; this application does not apply them automatically.
+
+The activity experience uses the existing Supabase URL and publishable key. It does not require a payment provider or another environment variable. Prices are informational in this release and reservations do not collect payment.
 
 ## 3. Configure Auth
 

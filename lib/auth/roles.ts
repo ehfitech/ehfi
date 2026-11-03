@@ -12,6 +12,8 @@ export type CompanyMembership = {
   memberRole: string
 }
 
+export type PlatformRole = Extract<RegistrationRole, "student" | "professional">
+
 const destinations: Record<RegistrationRole, string> = {
   student: "/aluno/plataforma",
   professional: "/profissional/plataforma",
@@ -65,6 +67,18 @@ export async function getAuthorizedProfile(
   if (roleError || !association) return null
   if (role === "company" && !(await getCompanyMembership())) return null
   return { userId, role }
+}
+
+export async function getAvailablePlatformRoles(userId: string): Promise<PlatformRole[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+  if (error || !data) return []
+  return data.flatMap(({ role }) =>
+    role === "student" || role === "professional" ? [role] : []
+  )
 }
 
 export async function getCompanyMembership(): Promise<CompanyMembership | null> {

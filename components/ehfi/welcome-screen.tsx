@@ -1,20 +1,25 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
 import {
-  IoFitnessOutline,
-  IoHeartOutline,
-  IoSchoolOutline,
+  IoArrowForwardOutline,
+  IoChevronDownOutline,
+  IoPeopleOutline,
 } from "react-icons/io5"
 
+import { ActivityDiscoveryVisual } from "@/components/ehfi/activity-discovery-visual"
 import { RoleCard } from "@/components/ehfi/role-card"
 import { ThemeToggle } from "@/components/ehfi/theme-toggle"
-import { entranceProps } from "@/lib/ehfi-motion"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { ehfiEase, ehfiMotion, entranceProps } from "@/lib/ehfi-motion"
 
 export function WelcomeScreen() {
   const reducedMotion = Boolean(useReducedMotion())
+  const [showOtherProfiles, setShowOtherProfiles] = useState(false)
 
   return (
     <main className="relative isolate flex min-h-dvh flex-col overflow-hidden px-5 py-5 sm:px-8 sm:py-7">
@@ -48,71 +53,106 @@ export function WelcomeScreen() {
         <ThemeToggle />
       </header>
 
-      <div className="mx-auto my-auto flex w-full max-w-6xl flex-col gap-10 py-12 lg:gap-12 lg:py-16">
-        <section className="mx-auto w-full max-w-3xl text-center lg:mx-0 lg:text-left">
-          <motion.h1
-            {...entranceProps(0.06, reducedMotion)}
-            className="mx-auto mt-5 max-w-[15ch] font-heading text-4xl leading-[1.04] font-semibold tracking-[-0.045em] text-foreground sm:text-5xl lg:mx-0 lg:text-[3.7rem]"
-          >
-            Conexões que movem sua jornada
-          </motion.h1>
-
-          <motion.p
-            {...entranceProps(0.12, reducedMotion)}
-            className="mx-auto mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg lg:mx-0"
-          >
-            Na EHFI, alunos, profissionais e empresas se encontram para cuidar,
-            ensinar e evoluir.
-          </motion.p>
-
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
+        <section className="grid flex-1 items-center gap-8 py-9 sm:gap-10 sm:py-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:py-8 xl:gap-16">
           <motion.div
-            {...entranceProps(0.18, reducedMotion)}
-            className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-3 text-sm font-medium text-foreground/80 lg:justify-start"
-            aria-label="Áreas de atuação"
+            {...entranceProps(0.06, reducedMotion)}
+            className="max-w-xl"
           >
-            <span className="inline-flex items-center gap-2">
-              <IoHeartOutline
-                aria-hidden="true"
-                className="size-4 text-primary"
-              />
-              Saúde
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <IoFitnessOutline
-                aria-hidden="true"
-                className="size-4 text-primary"
-              />
-              Esporte
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <IoSchoolOutline
-                aria-hidden="true"
-                className="size-4 text-primary"
-              />
-              Educação física
-            </span>
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3.5 py-2 text-xs font-semibold tracking-[0.08em] text-primary uppercase">
+              <span className="size-1.5 rounded-full bg-primary" />
+              Movimento com orientação
+            </p>
+
+            <h1 className="mt-5 max-w-[13ch] font-heading text-[2.65rem] leading-[1.02] font-semibold tracking-[-0.055em] text-foreground sm:text-6xl lg:max-w-[18ch] lg:text-[3.5rem] xl:text-[3.75rem]">
+              Encontre uma atividade que combina com você.
+            </h1>
+
+            <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+              Descubra profissionais de educação física e saúde, e reserve sua vaga para se movimentar no seu ritmo.
+            </p>
+
+            <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <Link
+                href="/aluno/entrar"
+                transitionTypes={["nav-forward"]}
+                className={cn(
+                  buttonVariants({
+                    size: "lg",
+                    className:
+                      "h-12 w-full rounded-xl px-5 text-sm font-semibold shadow-md shadow-primary/15 sm:w-auto",
+                  })
+                )}
+              >
+                Encontrar atividades
+                <IoArrowForwardOutline aria-hidden="true" className="size-4" />
+              </Link>
+            </div>
+
+            <section
+              id="perfis"
+              aria-label="Acesso profissional e empresarial"
+              className="mt-4 w-full max-w-lg"
+            >
+              <button
+                type="button"
+                aria-expanded={showOtherProfiles}
+                aria-controls="outros-perfis"
+                onClick={() => setShowOtherProfiles((open) => !open)}
+                className="group flex min-h-16 w-full items-center gap-3 rounded-2xl border border-border/75 bg-card/55 px-3.5 py-3 text-left shadow-sm backdrop-blur-xl transition-[border-color,background-color,box-shadow] duration-200 hover:border-primary/25 hover:bg-card/85 hover:shadow-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+              >
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-secondary-foreground/10 bg-secondary/75 text-ehfi-secondary transition-colors duration-200 group-hover:bg-secondary">
+                  <IoPeopleOutline aria-hidden="true" className="size-5" />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="text-sm font-semibold text-foreground">
+                    Entrar como profissional ou empresa
+                  </span>
+                  <span className="text-xs leading-5 text-muted-foreground">
+                    Acesse seu espaço na EHFI
+                  </span>
+                </span>
+                <motion.span
+                  aria-hidden="true"
+                  animate={{ rotate: showOtherProfiles ? 180 : 0 }}
+                  transition={{ duration: reducedMotion ? 0 : 0.2, ease: ehfiEase }}
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/75 text-muted-foreground transition-colors group-hover:text-foreground"
+                >
+                  <IoChevronDownOutline className="size-4" />
+                </motion.span>
+              </button>
+
+              <motion.div
+                id="outros-perfis"
+                aria-hidden={!showOtherProfiles}
+                inert={!showOtherProfiles}
+                initial={{ height: 0, opacity: 0, y: reducedMotion ? 0 : -6 }}
+                animate={{
+                  height: showOtherProfiles ? "auto" : 0,
+                  opacity: showOtherProfiles ? 1 : 0,
+                  y: showOtherProfiles || reducedMotion ? 0 : -6,
+                }}
+                transition={{
+                  duration: reducedMotion
+                    ? 0
+                    : showOtherProfiles
+                      ? ehfiMotion.duration.panel
+                      : ehfiMotion.duration.panel * 0.65,
+                  ease: ehfiEase,
+                }}
+                className="overflow-hidden"
+              >
+                <div className="px-0.5 pt-3 pb-1">
+                  <RoleCard />
+                </div>
+              </motion.div>
+            </section>
+          </motion.div>
+
+          <motion.div {...entranceProps(0.14, reducedMotion)}>
+            <ActivityDiscoveryVisual />
           </motion.div>
         </section>
-
-        <motion.section
-          {...entranceProps(0.24, reducedMotion)}
-          className="w-full rounded-[1.75rem] border border-border/70 bg-card/65 p-5 shadow-[0_28px_80px_-38px_rgba(15,23,42,0.32)] backdrop-blur-2xl sm:p-7 lg:p-8"
-        >
-          <div className="mb-5">
-            <p className="text-xs font-semibold tracking-[0.14em] text-ehfi-secondary uppercase">
-              Bem-vindo à EHFI
-            </p>
-            <h2 className="mt-1 font-heading text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-              Como você quer participar?
-            </h2>
-          </div>
-
-          <RoleCard />
-
-          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
-            Entre com seu perfil ou escolha “Criar conta” na tela de acesso.
-          </p>
-        </motion.section>
       </div>
 
       <motion.footer

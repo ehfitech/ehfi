@@ -1,5 +1,5 @@
 import { ProfessionalAgenda } from "@/components/ehfi/professional-agenda"
-import { getSaoPauloDateKey, getSaoPauloWeek, isValidDateKey } from "@/lib/activities/dates"
+import { addCalendarDays, getSaoPauloDateKey, getSaoPauloWeek, isValidDateKey, saoPauloDateTimeToIso } from "@/lib/activities/dates"
 import { listProfessionalActivities } from "@/lib/activities/professional-queries"
 import { getProfessionalProfileEditorData } from "@/lib/activities/profile-queries"
 
@@ -14,8 +14,13 @@ export default async function ProfessionalAgendaPage({
     const requestedActivity = Array.isArray(params.atividade) ? params.atividade[0] : params.atividade
     const requestedNew = Array.isArray(params.novo) ? params.novo[0] : params.novo
     const week = getSaoPauloWeek(isValidDateKey(requestedWeek) ? requestedWeek : getSaoPauloDateKey())
+    const loadedFrom = addCalendarDays(week.startDate, -7)
+    const loadedTo = addCalendarDays(week.endDate, 14)
     const [activities, profileData] = await Promise.all([
-      listProfessionalActivities({ from: week.from, to: week.to }),
+      listProfessionalActivities({
+        from: saoPauloDateTimeToIso(loadedFrom, "00:00"),
+        to: saoPauloDateTimeToIso(loadedTo, "00:00"),
+      }),
       getProfessionalProfileEditorData(),
     ])
     const today = getSaoPauloDateKey()
@@ -29,7 +34,8 @@ export default async function ProfessionalAgendaPage({
       <ProfessionalAgenda
         key={`${week.startDate}:${requestedActivity ?? ""}:${requestedNew === "1" ? "nova" : ""}`}
         activities={activities}
-        weekStart={week.startDate}
+        loadedFrom={loadedFrom}
+        loadedTo={loadedTo}
         initialSelectedDay={initialSelectedDay}
         initialCreateOpen={requestedNew === "1"}
         initialActivityId={requestedActivity ?? null}

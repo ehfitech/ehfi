@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache"
 
 import { getAuthorizedProfile } from "@/lib/auth/roles"
+import { addCalendarDays, isValidDateKey, saoPauloDateTimeToIso } from "@/lib/activities/dates"
 import { ActivityValidationError, validateActivityInput, type ActivityInput } from "@/lib/activities/activity-validation"
 import type { PlatformActionResult } from "@/lib/activities/types"
 import type { ProfessionalParticipant } from "@/lib/activities/types"
+import { listProfessionalActivities, type ProfessionalActivity } from "@/lib/activities/professional-queries"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 function activityError(error: string | undefined): PlatformActionResult<never> {
@@ -23,9 +25,9 @@ function activityError(error: string | undefined): PlatformActionResult<never> {
 }
 
 export async function saveProfessionalActivity(
-  _previousState: PlatformActionResult<{ activityId: string }>,
+  _previousState: PlatformActionResult<{ activityId: string; startsAt: string }>,
   formData: FormData
-): Promise<PlatformActionResult<{ activityId: string }>> {
+): Promise<PlatformActionResult<{ activityId: string; startsAt: string }>> {
   let input: ActivityInput
   try {
     input = validateActivityInput({
@@ -70,7 +72,7 @@ export async function saveProfessionalActivity(
   revalidatePath("/aluno/plataforma/aulas")
   return {
     ok: true,
-    data: { activityId: data },
+    data: { activityId: data, startsAt: input.startsAt },
     message: input.status === "published" ? "Atividade publicada na EHFI." : "Rascunho salvo com segurança.",
   }
 }
@@ -107,4 +109,23 @@ export async function loadProfessionalActivityParticipants(
   })
   if (error) return { ok: false, code: "participants_load_failed", message: "Não foi possível carregar os participantes desta atividade." }
   return { ok: true, data: data ?? [] }
+}
+
+export async function loadProfessionalAgendaChunk(
+  startDate: string
+): Promise<PlatformActionResult<ProfessionalActivity[]>> {
+  if (typeof startDate !== "string" || !isValidDateKey(startDate)) {
+    return { ok: false, code: "invalid_agenda_range", message: "O período solicitado para a agenda é inválido." }
+  }
+
+  try {
+    const endDate = addCalendarDays(startDate, 7)
+    const activities = await listProfessionalActivities({
+      from: saoPauloDateTimeToIso(startDate, "00:00"),
+      to: saoPauloDateTimeToIso(endDate, "00:00"),
+    })
+    return { ok: true, data: activities }
+  } catch {
+    return { ok: false, code: "agenda_chunk_load_failed", message: "Não foi possível carregar mais dias da agenda." }
+  }
 }

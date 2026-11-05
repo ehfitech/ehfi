@@ -47,7 +47,7 @@ function StudentIllustration() {
   return (
     <div
       aria-hidden="true"
-      className="absolute bottom-0 left-[-3%] z-0 h-[98%] w-[72%]"
+      className="absolute bottom-0 left-[-3%] z-0 h-[96%] w-[72%]"
     >
       <Image
         src="/images/ehfi-student-searcher.png"
@@ -104,7 +104,7 @@ function SearchContent({ showTap }: { showTap: boolean }) {
         <div className="mt-2 flex items-center gap-2 border-t border-border pt-2 text-muted-foreground">
           <IoLocationOutline className="size-3.5 shrink-0 text-primary" />
           <span className="text-[8px] sm:text-[9px]">
-            Campinas · perto de você
+            Navegantes · perto de você
           </span>
         </div>
       </div>
@@ -125,16 +125,16 @@ function SearchContent({ showTap }: { showTap: boolean }) {
 function ResultsContent({ showTap }: { showTap: boolean }) {
   return (
     <>
-      <div className="mt-3 flex items-center justify-between text-[8px] text-muted-foreground sm:text-[9px]">
-        <span>Campinas, até 5 km</span>
+      <div className="mt-3 max-[380px]:mt-2 flex items-center justify-between text-[8px] text-muted-foreground sm:text-[9px]">
+        <span>Navegantes, até 5 km</span>
         <span>3 opções</span>
       </div>
-      <div className="mt-2 rounded-xl border border-border bg-card p-2.5">
-        <div className="mb-2 inline-flex rounded-full bg-secondary px-2 py-1 text-[7px] font-semibold text-secondary-foreground sm:text-[8px]">
+      <div className="mt-2 max-[380px]:mt-1.5 rounded-xl border border-border bg-card p-2.5 max-[380px]:p-2">
+        <div className="mb-2 max-[380px]:mb-1 inline-flex rounded-full bg-secondary px-2 py-1 max-[380px]:py-0.5 text-[7px] font-semibold text-secondary-foreground sm:text-[8px]">
           FUNCIONAL COLETIVO
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-[9px] font-semibold text-primary">
+          <div className="flex size-8 max-[380px]:size-7 shrink-0 items-center justify-center rounded-full bg-accent text-[9px] font-semibold text-primary">
             MC
           </div>
           <div className="min-w-0">
@@ -146,16 +146,16 @@ function ResultsContent({ showTap }: { showTap: boolean }) {
             </p>
           </div>
         </div>
-        <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-muted px-2 py-1.5 text-[7px] text-foreground/80 sm:text-[8px]">
+        <div className="mt-2 max-[380px]:mt-1 flex items-center gap-1.5 rounded-lg bg-muted px-2 py-1.5 max-[380px]:py-1 text-[7px] text-foreground/80 sm:text-[8px]">
           <IoCalendarClearOutline className="size-3 text-primary" />
           Próxima turma · sábado, 9h30
         </div>
-        <div className="relative mt-2 flex h-7 items-center justify-center rounded-lg bg-primary text-[8px] font-semibold text-primary-foreground sm:text-[9px]">
+        <div className="relative mt-2 max-[380px]:mt-1.5 flex h-7 max-[380px]:h-6 items-center justify-center rounded-lg bg-primary text-[8px] font-semibold text-primary-foreground sm:text-[9px]">
           {showTap ? "Horários disponíveis" : "Ver horários"}
           <TapHighlight active={showTap} />
         </div>
       </div>
-      <p className="mt-auto pt-2 text-center text-[7px] text-muted-foreground sm:text-[8px]">
+      <p className="mt-auto pt-2 max-[380px]:pt-1 text-center text-[7px] text-muted-foreground sm:text-[8px]">
         Profissional perto da sua região
       </p>
     </>
@@ -205,7 +205,7 @@ function ScheduleContent({
           </span>
         </div>
       </div>
-      <div className="relative mt-auto flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary text-[8px] font-semibold text-primary-foreground sm:text-[9px]">
+      <div className="relative mt-auto flex h-8 max-[380px]:h-7 items-center justify-center gap-1.5 rounded-lg bg-primary text-[8px] font-semibold text-primary-foreground sm:text-[9px]">
         {showConfirmTap ? (
           <IoCheckmarkOutline className="size-3" />
         ) : (
@@ -243,7 +243,7 @@ function ConfirmedContent({ showAgendaTap }: { showAgendaTap: boolean }) {
 function AgendaContent() {
   return (
     <>
-      <div className="mt-3 flex items-center justify-between rounded-lg bg-secondary px-2.5 py-2">
+      <div className="mt-2 max-[380px]:mt-1 flex items-center justify-between rounded-lg bg-secondary px-2.5 py-1.5 max-[380px]:py-1">
         <div>
           <p className="text-[7px] font-semibold tracking-[0.08em] text-secondary-foreground uppercase">
             Próxima aula
@@ -254,25 +254,25 @@ function AgendaContent() {
         </div>
         <IoCalendarClearOutline className="size-4 text-ehfi-secondary" />
       </div>
-      <div className="mt-2 rounded-xl border border-border bg-card p-2.5">
+      <div className="mt-2 max-[380px]:mt-1 rounded-xl border border-border bg-card p-2 max-[380px]:p-1.5">
         <div className="flex items-start justify-between gap-1">
           <span className="rounded-full bg-[#E7F5EC] px-2 py-1 text-[7px] font-semibold text-[#26764B] dark:bg-[#183425] dark:text-[#9AD6AF]">
             CONFIRMADA
           </span>
           <IoTimeOutline className="mt-0.5 size-3.5 text-primary" />
         </div>
-        <p className="mt-2 text-[9px] leading-4 font-semibold text-foreground sm:text-[10px]">
+        <p className="mt-1.5 max-[380px]:mt-1 text-[9px] leading-4 font-semibold text-foreground sm:text-[10px]">
           Treino funcional coletivo
         </p>
-        <p className="mt-1 text-[7px] text-muted-foreground sm:text-[8px]">
+        <p className="mt-0.5 text-[7px] text-muted-foreground sm:text-[8px]">
           Com Prof. Camila Souza
         </p>
-        <div className="mt-2 flex items-center gap-1 text-[7px] text-muted-foreground sm:text-[8px]">
+        <div className="mt-1 max-[380px]:mt-0.5 flex items-center gap-1 text-[7px] text-muted-foreground sm:text-[8px]">
           <IoLocationOutline className="size-3 text-primary" />
-          Parque Taquaral · Campinas
+          Gravatá · Navegantes
         </div>
       </div>
-      <p className="mt-auto pt-2 text-center text-[7px] text-muted-foreground sm:text-[8px]">
+      <p className="mt-auto pt-2 max-[380px]:pt-1 text-center text-[7px] text-muted-foreground sm:text-[8px]">
         Sua aula já está na agenda
       </p>
     </>
@@ -383,12 +383,12 @@ export function ActivityDiscoveryVisual() {
   }, [isInView, prefersReducedMotion])
 
   return (
-    <div className="mx-auto w-full max-w-[34rem]">
+      <div className="mx-auto w-full max-w-[34rem]">
       <div
         role="img"
         ref={sceneRef}
         aria-label="Demonstração: uma aluna busca treino funcional coletivo perto dela, escolhe um horário e vê a aula confirmada na agenda do celular."
-        className="relative isolate min-h-[24rem] overflow-hidden rounded-[2rem] border border-border/70 bg-secondary/40 shadow-[0_28px_74px_-46px_rgba(38,24,64,0.38)] sm:aspect-[1.08] sm:min-h-0 sm:rounded-[2.25rem]"
+        className="relative isolate h-[clamp(28rem,130vw,35rem)] overflow-hidden rounded-[2rem] border border-border/70 bg-secondary/40 shadow-[0_28px_74px_-46px_rgba(38,24,64,0.38)] sm:aspect-[1.08] sm:h-auto sm:min-h-0 sm:rounded-[2.25rem]"
       >
         <div
           aria-hidden="true"
@@ -397,13 +397,13 @@ export function ActivityDiscoveryVisual() {
 
         <StudentIllustration />
 
-        <div className="absolute top-1/2 right-[3%] z-10 w-[46%] max-w-[15rem] -translate-y-1/2 rounded-[2rem] border-[5px] border-[#282431] bg-[#282431] p-1.5 shadow-[0_22px_40px_-20px_rgba(25,20,38,0.45)] sm:right-[5%] sm:rounded-[2.2rem] sm:border-[6px] sm:p-2">
-          <div className="relative flex aspect-[0.49] flex-col overflow-hidden rounded-[1.48rem] bg-background px-2.5 pt-7 pb-2 sm:rounded-[1.65rem] sm:px-3.5 sm:pt-8 sm:pb-2.5">
+        <div className="absolute top-1/2 right-[2%] z-10 w-[54%] max-w-[15rem] -translate-y-1/2 rounded-[2rem] border-[5px] border-[#282431] bg-[#282431] p-1.5 shadow-[0_22px_40px_-20px_rgba(25,20,38,0.45)] sm:right-[5%] sm:w-[46%] sm:rounded-[2.2rem] sm:border-[6px] sm:p-2">
+          <div className="relative flex aspect-[0.42] max-[380px]:aspect-[0.4] flex-col overflow-hidden rounded-[1.48rem] bg-background px-2.5 pt-7 max-[380px]:pt-6 pb-2 sm:aspect-[0.49] sm:rounded-[1.65rem] sm:px-3.5 sm:pt-8 sm:pb-2.5">
             <div
               aria-hidden="true"
               className="absolute top-2 left-1/2 h-[0.28rem] w-[3.3rem] -translate-x-1/2 rounded-full bg-[#282431]"
             />
-            <div className="mb-2 flex items-center justify-between border-b border-border pb-2">
+            <div className="mb-2 max-[380px]:mb-1 flex items-center justify-between border-b border-border pb-2 max-[380px]:pb-1.5">
               <span className="inline-flex items-center gap-1.5">
                 <Image
                   src="/pwa/icon-192.png"
@@ -422,7 +422,7 @@ export function ActivityDiscoveryVisual() {
               </span>
             </div>
 
-            <div className="relative min-h-0 flex-1">
+            <div className="relative min-h-0 flex-1 overflow-hidden">
               {steps.map((step) => (
                 <ScreenStep
                   key={step}
@@ -434,7 +434,7 @@ export function ActivityDiscoveryVisual() {
               ))}
             </div>
 
-            <div className="mt-2 flex items-center justify-around border-t border-border pt-2 text-[6px] text-muted-foreground sm:text-[7px]">
+            <div className="mt-2 max-[380px]:mt-1.5 flex items-center justify-around border-t border-border pt-2 max-[380px]:pt-1.5 text-[6px] text-muted-foreground sm:text-[7px]">
               <span
                 className={`relative rounded px-2 ${activeTab === "explore" ? "font-semibold text-ehfi-secondary" : ""}`}
               >

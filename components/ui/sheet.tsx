@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect, useState } from "react"
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 import { cn } from "cn"
 
@@ -40,23 +41,50 @@ function SheetContent({
   className,
   children,
   side = "right",
+  mobileSide,
   showCloseButton = true,
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: "top" | "right" | "bottom" | "left"
+  mobileSide?: "bottom"
   showCloseButton?: boolean
 }) {
+  const [keyboardInset, setKeyboardInset] = useState(0)
+
+  useEffect(() => {
+    if (mobileSide !== "bottom" || !window.visualViewport) return
+
+    const viewport = window.visualViewport
+    const updateKeyboardInset = () => {
+      const inset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+      setKeyboardInset(inset >= 120 ? Math.round(inset) : 0)
+    }
+
+    updateKeyboardInset()
+    viewport.addEventListener("resize", updateKeyboardInset)
+    viewport.addEventListener("scroll", updateKeyboardInset)
+    window.addEventListener("resize", updateKeyboardInset)
+    return () => {
+      viewport.removeEventListener("resize", updateKeyboardInset)
+      viewport.removeEventListener("scroll", updateKeyboardInset)
+      window.removeEventListener("resize", updateKeyboardInset)
+    }
+  }, [mobileSide])
+
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Popup
+        {...props}
         data-slot="sheet-content"
         data-side={side}
+        data-mobile-side={mobileSide}
+        style={{ ...props.style, "--sheet-keyboard-inset": `${keyboardInset}px` } as React.CSSProperties}
         className={cn(
           "fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem] data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm",
+          mobileSide === "bottom" && "sheet-mobile-bottom",
           className
         )}
-        {...props}
       >
         {children}
         {showCloseButton && (

@@ -1414,7 +1414,7 @@ export function ProfessionalSignup() {
                                     <IconInput
                                       icon={<IoLocationOutline aria-hidden="true" />}
                                       id="laborServiceAreaDraft"
-                                      placeholder="Ex.: Campinas, SP ou Região Metropolitana"
+                                      placeholder="Ex.: Navegantes"
                                       value={serviceAreaDraft}
                                       onChange={(event) => setServiceAreaDraft(event.target.value)}
                                       onKeyDown={(event) => {

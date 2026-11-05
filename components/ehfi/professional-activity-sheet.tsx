@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react"
 import { IoCalendarOutline, IoLocationOutline, IoPeopleOutline, IoPricetagOutline, IoTimeOutline } from "react-icons/io5"
 
 import { saveProfessionalActivity } from "@/app/actions/activities"
+import { CurrencyInput } from "@/components/ehfi/currency-input"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -19,9 +20,9 @@ import { saoPauloInputParts } from "@/lib/activities/dates"
 import type { PlatformActionResult } from "@/lib/activities/types"
 import type { ProfessionalActivity } from "@/lib/activities/professional-queries"
 
-const initialState: PlatformActionResult<{ activityId: string }> = {
+const initialState: PlatformActionResult<{ activityId: string; startsAt: string }> = {
   ok: true,
-  data: { activityId: "" },
+  data: { activityId: "", startsAt: "" },
 }
 
 function FieldError({ children }: { children?: string }) {
@@ -34,12 +35,14 @@ export function ProfessionalActivitySheet({
   activity,
   today,
   profilePublished,
+  onSaved,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   activity: ProfessionalActivity | null
   today: string
   profilePublished: boolean
+  onSaved?: (activityId: string, startsAt: string) => void
 }) {
   const [state, formAction, pending] = useActionState(saveProfessionalActivity, initialState)
   const errors = state.ok ? {} : state.fieldErrors ?? {}
@@ -51,12 +54,14 @@ export function ProfessionalActivitySheet({
   const canPublish = profilePublished || activity?.status === "published"
 
   useEffect(() => {
-    if (open && state.ok && state.message) onOpenChange(false)
-  }, [open, onOpenChange, state])
+    if (!open || !state.ok || !state.data.activityId) return
+    onSaved?.(state.data.activityId, state.data.startsAt)
+    onOpenChange(false)
+  }, [open, onOpenChange, onSaved, state])
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full gap-0 overflow-hidden border-border/70 bg-card sm:max-w-[42rem]" key={`${activity?.activity_id ?? "nova"}-${open ? "aberta" : "fechada"}`}>
+      <SheetContent side="right" mobileSide="bottom" className="w-full gap-0 overflow-hidden border-border/70 bg-card sm:max-w-[42rem]" key={`${activity?.activity_id ?? "nova"}-${open ? "aberta" : "fechada"}`}>
         <SheetHeader className="shrink-0 border-b border-border/70 px-5 py-5 pr-14 sm:px-7">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ehfi-secondary">Agenda profissional</p>
           <SheetTitle className="mt-1 font-heading text-xl font-semibold">{activity ? "Editar atividade" : "Nova atividade"}</SheetTitle>
@@ -74,7 +79,7 @@ export function ProfessionalActivitySheet({
             <label className="grid gap-2 text-sm font-medium"><span className="inline-flex items-center gap-2"><IoLocationOutline aria-hidden="true" className="size-4 text-muted-foreground" />Local</span><Input name="location" minLength={2} maxLength={160} defaultValue={activity?.location ?? ""} readOnly={scheduleLocked} required placeholder="Parque, estúdio ou endereço" className="h-12 rounded-xl bg-background/60 px-3" />{errors.location && <FieldError>{errors.location}</FieldError>}</label>
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="grid gap-2 text-sm font-medium"><span className="inline-flex items-center gap-2"><IoTimeOutline aria-hidden="true" className="size-4 text-muted-foreground" />Duração</span><select name="duration_minutes" defaultValue={duration} disabled={scheduleLocked} className="h-12 rounded-xl border border-input bg-background/60 px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/40">{![30, 45, 60, 90, 120, 180, 240, 360, 720].includes(duration) && <option value={duration}>{duration} min</option>}<option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option><option value="90">1h 30</option><option value="120">2 horas</option><option value="180">3 horas</option><option value="240">4 horas</option><option value="360">6 horas</option><option value="720">12 horas</option></select>{scheduleLocked && <input type="hidden" name="duration_minutes" value={duration} />}{errors.duration_minutes && <FieldError>{errors.duration_minutes}</FieldError>}</label>
-              <label className="grid gap-2 text-sm font-medium"><span className="inline-flex items-center gap-2"><IoPricetagOutline aria-hidden="true" className="size-4 text-muted-foreground" />Preço</span><Input name="price" type="text" inputMode="decimal" defaultValue={activity ? (activity.price_cents / 100).toFixed(2).replace(".", ",") : "0,00"} required placeholder="0,00" className="h-12 rounded-xl bg-background/60 px-3" />{errors.price && <FieldError>{errors.price}</FieldError>}</label>
+              <label className="grid gap-2 text-sm font-medium"><span className="inline-flex items-center gap-2"><IoPricetagOutline aria-hidden="true" className="size-4 text-muted-foreground" />Preço</span><span className={`flex h-12 items-center gap-2 rounded-xl border bg-background/60 px-3 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30 ${errors.price ? "border-destructive ring-3 ring-destructive/15" : "border-input"}`}><span aria-hidden="true" className="text-sm font-medium text-muted-foreground">R$</span><CurrencyInput initialCents={activity?.price_cents ?? 0} required aria-invalid={Boolean(errors.price)} className="h-full border-0 bg-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:ring-0" /></span>{errors.price && <FieldError>{errors.price}</FieldError>}</label>
               <label className="grid gap-2 text-sm font-medium"><span className="inline-flex items-center gap-2"><IoPeopleOutline aria-hidden="true" className="size-4 text-muted-foreground" />Vagas</span><Input name="capacity" type="number" min={1} max={500} defaultValue={activity?.capacity ?? 8} readOnly={scheduleLocked} required className="h-12 rounded-xl bg-background/60 px-3" />{errors.capacity && <FieldError>{errors.capacity}</FieldError>}</label>
             </div>
             <label className="grid gap-2 text-sm font-medium">Observações <Textarea name="description" maxLength={1200} defaultValue={activity?.description ?? ""} placeholder="Nível, materiais ou recomendações para os participantes." className="min-h-28 rounded-xl bg-background/60 px-3 py-3" />{errors.description && <FieldError>{errors.description}</FieldError>}</label>

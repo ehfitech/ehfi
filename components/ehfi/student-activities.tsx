@@ -89,7 +89,7 @@ export function StudentActivities({
 
   return (
     <div className="space-y-7 pb-10">
-      <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/55 bg-gradient-to-br from-primary/[0.13] via-card/85 to-ehfi-secondary/[0.12] px-5 py-6 shadow-[0_26px_85px_-50px_rgba(65,35,96,0.5)] backdrop-blur-xl sm:px-8 sm:py-8">
+      <section className="relative isolate overflow-hidden rounded-[2rem] border border-border/70 bg-gradient-to-br from-primary/[0.13] via-card/85 to-ehfi-secondary/[0.12] px-5 py-6 shadow-[0_26px_85px_-50px_rgba(65,35,96,0.5)] backdrop-blur-xl sm:px-8 sm:py-8">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-32 -z-10 size-72 rounded-full bg-primary/10 blur-3xl" />
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ehfi-secondary">Escolha seu próximo movimento</p>
         <h1 className="mt-2 font-heading text-3xl font-semibold tracking-[-0.04em] text-foreground sm:text-4xl">Atividades e jornada</h1>

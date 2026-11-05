@@ -84,7 +84,7 @@ export function ProfessionalProfileForm({
             </div>
             <label className="grid gap-2 text-sm font-medium text-foreground">
               Cidade
-              <Input name="city" required minLength={2} maxLength={80} value={values.city} onChange={(event) => update("city", event.target.value)} placeholder="Ex.: Campinas" aria-invalid={Boolean(fieldErrors?.city)} className="h-12 rounded-xl bg-background/60 px-3" />
+              <Input name="city" required minLength={2} maxLength={80} value={values.city} onChange={(event) => update("city", event.target.value)} placeholder="Ex.: Navegantes" aria-invalid={Boolean(fieldErrors?.city)} className="h-12 rounded-xl bg-background/60 px-3" />
               {fieldErrors?.city && <span className="text-xs font-normal text-destructive">{fieldErrors.city}</span>}
             </label>
             <label className="grid gap-2 text-sm font-medium text-foreground">

@@ -16,6 +16,7 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
   applicationName: "EHFI",
+  manifest: "/manifest.webmanifest",
   title: "EHFI — Conexões em movimento",
   description: "Conectamos pessoas e profissionais de saúde, esporte e educação física.",
   appleWebApp: {

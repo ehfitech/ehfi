@@ -57,7 +57,7 @@ export function RoleCard() {
                 <span className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.07] text-primary transition-colors duration-200 group-hover:bg-primary/10">
                   <Icon aria-hidden="true" className="size-5" />
                 </span>
-                <span className="flex size-8 items-center justify-center rounded-full bg-primary/[0.07] text-primary transition-[background-color,color,transform] duration-200 group-hover:translate-x-0.5 group-hover:bg-primary group-hover:text-primary-foreground">
+                <span className="flex size-8 items-center justify-center rounded-full bg-primary/[0.07] text-primary transition ease-in-out duration-200 group-hover:translate-x-0.5 group-hover:bg-primary group-hover:text-primary-foreground">
                   <IoArrowForwardOutline aria-hidden="true" className="size-4" />
                 </span>
               </CardHeader>

@@ -43,13 +43,13 @@ export function ProfessionalParticipantList({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full gap-0 border-border/70 bg-card sm:max-w-md">
+      <SheetContent side="right" mobileSide="bottom" className="w-full gap-0 border-border/70 bg-card sm:max-w-md">
         <SheetHeader className="border-b border-border/70 px-5 py-5 pr-14 text-left sm:px-6">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ehfi-secondary">Lista privada</p>
           <SheetTitle className="mt-1 line-clamp-2 font-heading text-lg font-semibold">{activity?.title ?? "Participantes"}</SheetTitle>
           <SheetDescription>{activity ? formatSaoPauloDateTime(activity.starts_at) : "Participantes com reserva ativa"}</SheetDescription>
         </SheetHeader>
-        <div className="flex-1 space-y-4 overflow-y-auto p-5 sm:p-6">
+        <div className="flex-1 space-y-4 overflow-y-auto p-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] sm:p-6">
           <p className="flex items-start gap-2 rounded-xl bg-secondary/65 p-3 text-xs leading-5 text-secondary-foreground"><IoShieldCheckmarkOutline aria-hidden="true" className="mt-0.5 size-4 shrink-0" />Por privacidade, você vê apenas o primeiro nome e a inicial do sobrenome. Contatos e informações de saúde não são compartilhados.</p>
           {loading && <div role="status" className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Carregando participantes…</div>}
           {error && <div role="alert" className="rounded-2xl bg-destructive/10 p-4 text-sm text-destructive">{error}</div>}

@@ -77,7 +77,7 @@ export function StudentActivityDetail({ details }: { details: StudentActivityDet
         <Link href="/aluno/plataforma/aulas#descobrir" className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card/65 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"><IoArrowBackOutline aria-hidden="true" className="size-4" /> Voltar para atividades</Link>
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
           <div className="space-y-5">
-            <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/55 bg-gradient-to-br from-primary/[0.13] via-card/85 to-ehfi-secondary/[0.12] px-5 py-6 shadow-[0_26px_85px_-50px_rgba(65,35,96,0.5)] backdrop-blur-xl sm:px-8 sm:py-8">
+            <section className="relative isolate overflow-hidden rounded-[2rem] border border-border/70 bg-gradient-to-br from-primary/[0.13] via-card/85 to-ehfi-secondary/[0.12] px-5 py-6 shadow-[0_26px_85px_-50px_rgba(65,35,96,0.5)] backdrop-blur-xl sm:px-8 sm:py-8">
               <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-28 -z-10 size-72 rounded-full bg-primary/10 blur-3xl" />
               <span className={cn("inline-flex rounded-full px-3 py-1.5 text-xs font-semibold", isReserved ? "bg-primary/10 text-primary" : activity.places_remaining > 0 && !activityCancelled ? "bg-emerald-600/10 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground")}>{stateText}</span>
               <h1 className="mt-4 max-w-2xl font-heading text-3xl font-semibold tracking-[-0.04em] text-foreground sm:text-4xl">{activity.title}</h1>
